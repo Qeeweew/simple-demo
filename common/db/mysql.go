@@ -2,13 +2,14 @@ package db
 
 import (
 	"fmt"
+	"simple-demo/common/config"
+	"simple-demo/common/model"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"simple-demo/common/config"
-	"simple-demo/common/model"
 )
 
 func MySQLInit() {
@@ -39,14 +40,17 @@ func MySQLInit() {
 	// TODO: model层设计好之后放开注释
 
 	// 自动建表
-	// AutoCreateTable()
+	AutoCreateTable()
 }
 
 // AutoCreateTable TODO: model层设计好之后修改自动建表的逻辑
 func AutoCreateTable() {
 	_ = MySQL.AutoMigrate(
 		&model.User{},
-		// ...
+		&model.Video{},
+		&model.Comment{},
+		&model.Follow{},
+		&model.Like{},
 	)
 
 }
