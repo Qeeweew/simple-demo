@@ -28,8 +28,8 @@ type Comment struct {
 	Video   Video
 }
 
-// Like 点赞表
-type Like struct {
+// Favar 点赞表
+type Favor struct {
 	UserID  uint `gorm:"primaryKey;autoIncrement:false"`
 	VideoID uint `gorm:"primaryKey;autoIncrement:false"`
 }
