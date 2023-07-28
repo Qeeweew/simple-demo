@@ -2,22 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"simple-demo/common/config"
 	"simple-demo/common/db"
 	"simple-demo/common/log"
-	"sync"
+
+	"github.com/gin-gonic/gin"
 )
 
-var once sync.Once
-
 func init() {
-	once.Do(func() {
-		config.ReadCfg()
-		config.Init()
-		log.Init()
-		db.Init()
-	})
+	config.ReadCfg()
+	config.Init()
+	log.Init()
+	db.Init()
 }
 
 func main() {
