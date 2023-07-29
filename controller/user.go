@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 var usersLoginInfo = map[string]User{
@@ -58,10 +59,11 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
+	logrus.Println(username, password)
 
 	var user model.User
 
-	if err := db.MySQL.Where("name = ?", username).First(user).Error; err != nil {
+	if err := db.MySQL.Where("name = ?", username).First(&user).Error; err != nil {
 		//找不到
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
@@ -83,30 +85,27 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	token := c.Query("token")
-	_, err := utils.ParseToken(token)
-	if err != nil {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 2, StatusMsg: "Invalid token"},
-		})
-		return
-	}
-	askID, _ := strconv.Atoi(c.Query("user_id"))
-	var user model.User
+	targetID, _ := strconv.Atoi(c.Query("user_id"))
+	userID, _ := c.Keys["auth_id"]
 
-	if err := db.MySQL.Where("id = ?", askID).First(&user).Error; err != nil {
+	var targetUser model.User
+	if err := db.MySQL.Where("id = ?", targetID).First(&targetUser).Error; err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
 	} else {
+		// 发起请求的user
+		var user model.User
+		db.MySQL.First(&user, "ID = ?", userID)
+		var isFollow = db.MySQL.Model(&user).Where("follows.user_id = ? AND user.id = ?", targetID, userID).Association("Follows").Count() > 0
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User: User{
-				Id:            int64(user.ID),
-				Name:          user.Name,
-				FollowCount:   int64(len(user.Follows)),
-				FollowerCount: int64(len(user.Fans)),
-				IsFollow:      true,
+				Id:            int64(targetUser.ID),
+				Name:          targetUser.Name,
+				FollowCount:   int64(len(targetUser.Follows)),
+				FollowerCount: int64(len(targetUser.Fans)),
+				IsFollow:      isFollow,
 			},
 		})
 	}
