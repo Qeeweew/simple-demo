@@ -6,7 +6,6 @@ import (
 	"simple-demo/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 var skipPaths = []string{
@@ -14,6 +13,8 @@ var skipPaths = []string{
 	"/douyin/feed/",
 	"/douyin/user/login/",
 }
+
+// auth_id 记录token对应用户的id
 
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -25,25 +26,20 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			}
 		}
 
-		var invalidTokenResponse = controller.Response{
+		var defaultResponse = controller.Response{
 			StatusCode: 1,
 			StatusMsg:  "Invalid Token",
 		}
-		tokenString := c.Request.Header.Get("token")
+		tokenString := c.Query("token")
 		if tokenString == "" {
-			c.JSON(http.StatusOK, invalidTokenResponse)
+			c.JSON(http.StatusOK, defaultResponse)
 			return
 		}
-		var claims jwt.MapClaims
-		_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
-			return utils.SecretKey, nil
-		})
-
+		id, err := utils.ParseToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusOK, invalidTokenResponse)
+			c.JSON(http.StatusOK, defaultResponse)
 			return
 		}
-		aud, _ := claims.GetAudience()
-		c.Set("user_id", aud[0])
+		c.Set("auth_id", id)
 	}
 }
