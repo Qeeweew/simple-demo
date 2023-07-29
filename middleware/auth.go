@@ -9,7 +9,7 @@ import (
 )
 
 var skipPaths = []string{
-	"/douyin/user/register",
+	"/douyin/user/register/",
 	"/douyin/feed/",
 	"/douyin/user/login/",
 }
