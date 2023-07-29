@@ -27,7 +27,7 @@ func NewUserService(r model.UserRepository) model.UserService {
 
 func (u *userService) Login(user *model.User) error {
 	password := user.Password
-	err := u.userRepository.FindByName(user.Name, user)
+	err := u.userRepository.FindByName(user.Name, user, 0)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (u *userService) Register(user *model.User) error {
 }
 
 func (u *userService) Info(userID uint, targetID uint, user *model.User) (isFollow bool, err error) {
-	err = u.userRepository.FindByID(targetID, user)
+	err = u.userRepository.FindByID(targetID, user, 3)
 	if err != nil {
 		return
 	}

@@ -34,7 +34,7 @@ type UserResponse struct {
 }
 
 func getService() model.UserService {
-	return service.NewUserService(repository.NewUserRepository(db.MySQL))
+	return service.NewUserService(repository.NewUserRepository(db.MySQL.Model(&model.User{})))
 }
 
 func Register(c *gin.Context) {

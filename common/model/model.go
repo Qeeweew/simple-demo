@@ -70,6 +70,6 @@ type UserService interface {
 // UserRepository : represent the user's repository contract
 type UserRepository interface {
 	Save(user *User) error
-	FindByID(userID uint, user *User) error
-	FindByName(name string, user *User) error
+	FindByID(userID uint, user *User, preload uint) error
+	FindByName(name string, user *User, preload uint) error
 }

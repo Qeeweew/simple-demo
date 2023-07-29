@@ -20,9 +20,23 @@ func (u *userRepository) Save(user *model.User) error {
 	return u.DB.Create(user).Error
 }
 
-func (u *userRepository) FindByID(userID uint, user *model.User) error {
-	return u.DB.First(user, "id = ?", userID).Error
+func (u *userRepository) FindByID(userID uint, user *model.User, preload uint) error {
+	var db = u.DB
+	if preload&1 != 0 {
+		db = db.Preload("Follows")
+	}
+	if preload&2 != 0 {
+		db = db.Preload("Fans")
+	}
+	return db.First(user, "id = ?", userID).Error
 }
-func (u *userRepository) FindByName(username string, user *model.User) error {
-	return u.DB.First(user, "name = ?", username).Error
+func (u *userRepository) FindByName(username string, user *model.User, preload uint) error {
+	var db = u.DB
+	if preload&1 != 0 {
+		db = db.Preload("Follows")
+	}
+	if preload&2 != 0 {
+		db = db.Preload("Fans")
+	}
+	return db.First(user, "name = ?", username).Error
 }
