@@ -1,9 +1,13 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+	"simple-demo/common/db"
+	"simple-demo/common/model"
+	"simple-demo/utils"
 	"sync/atomic"
+
+	"github.com/gin-gonic/gin"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -61,18 +65,25 @@ func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := c.Query("password")
 
-	token := username + password
-
-	if user, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
-			UserId:   user.Id,
-			Token:    token,
-		})
-	} else {
+	var users []model.User
+	db.MySQL.Find(&users, "name = ?", username)
+	if len(users) == 0 {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
 		})
+	} else {
+		var user = users[0]
+		if user.Password == password {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 0},
+				UserId:   int64(user.ID),
+				Token:    utils.CreateToken(user.ID),
+			})
+		} else {
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 2, StatusMsg: "Wrong password"},
+			})
+		}
 	}
 }
 
