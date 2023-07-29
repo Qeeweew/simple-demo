@@ -1,11 +1,19 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"simple-demo/controller"
+	"simple-demo/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 func initRouter(r *gin.Engine) {
+	// 鉴权中间件
+	r.Use(middleware.JWTAuthMiddleware())
+
+	// 用于存放视频
+	r.Static("/videos", "./data/videos")
+
 	apiRouter := r.Group("/douyin")
 
 	// 测试
