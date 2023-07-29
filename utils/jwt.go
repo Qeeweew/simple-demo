@@ -8,12 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var secretKey = []byte("1111222233334444")
+var SecretKey = []byte("1111222233334444")
 
 func CreateToken(userID uint) string {
 	t, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"aud": fmt.Sprintf("%v", userID),
-	}).SignedString(secretKey)
+	}).SignedString(SecretKey)
 	if err != nil {
 		logrus.Panic("JWT creating error", err)
 	}
@@ -23,7 +23,7 @@ func CreateToken(userID uint) string {
 func ParseToken(tokenString string) (res uint, err error) {
 	var token *jwt.Token
 	token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return secretKey, nil
+		return SecretKey, nil
 	})
 	if err != nil {
 		return
