@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var usersLoginInfo = map[string]User{
@@ -39,18 +40,29 @@ func Register(c *gin.Context) {
 		Name:     username,
 		Password: password,
 	}
-	if err := db.MySQL.Where("name = ?", username).First(user).Error; err != nil {
-		//找不到
-		db.MySQL.Create(&user)
+	err := db.MySQL.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("name = ?", username).First(&user).Error; err != nil {
+			//找不到
+			err := tx.Create(&user).Error
+			if err != nil {
+				return err
+			}
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 0},
+				UserId:   int64(user.ID),
+				Token:    utils.CreateToken(user.ID),
+			})
+		} else {
+			//找到
+			c.JSON(http.StatusOK, UserLoginResponse{
+				Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+			})
+		}
+		return nil
+	})
+	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
-			UserId:   int64(user.ID),
-			Token:    utils.CreateToken(user.ID),
-		})
-	} else {
-		//找到
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+			Response: Response{StatusCode: 1, StatusMsg: "tx failed"},
 		})
 	}
 }
