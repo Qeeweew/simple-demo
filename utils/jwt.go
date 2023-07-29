@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -12,9 +12,9 @@ import (
 
 var secretKey = []byte("1111222233334444")
 
-func createToken(userID uint) string {
+func CreateToken(userID uint) string {
 	t, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"aud": userID,
+		"aud": fmt.Sprintf("%v", userID),
 	}).SignedString(secretKey)
 	if err != nil {
 		logrus.Panic("JWT creating error", err)
@@ -22,24 +22,23 @@ func createToken(userID uint) string {
 	return t
 }
 
-func parseToken(tokenString string) (uint, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func ParseToken(tokenString string) (ans uint, err error) {
+	var token *jwt.Token
+	token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 	if err != nil {
-		return 0, errors.New("invalid token!")
+		return
 	}
-	aud, err := token.Claims.GetAudience()
+	var aud jwt.ClaimStrings
+	aud, err = token.Claims.GetAudience()
 	if err != nil {
-		return 0, errors.New("invalid token!")
+		return
 	}
-	data, err := aud.MarshalJSON()
+	id, err := strconv.Atoi(aud[0])
 	if err != nil {
-		return 0, errors.New("invalid token!")
+		return
 	}
-	id, err := strconv.Atoi(string(data))
-	if err != nil {
-		return 0, errors.New("invalid token!")
-	}
-	return uint(id), nil
+	ans = uint(id)
+	return
 }
