@@ -8,8 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: jwt鉴权
-
 var secretKey = []byte("1111222233334444")
 
 func CreateToken(userID uint) string {
@@ -22,7 +20,7 @@ func CreateToken(userID uint) string {
 	return t
 }
 
-func ParseToken(tokenString string) (ans uint, err error) {
+func ParseToken(tokenString string) (res uint, err error) {
 	var token *jwt.Token
 	token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
@@ -31,14 +29,8 @@ func ParseToken(tokenString string) (ans uint, err error) {
 		return
 	}
 	var aud jwt.ClaimStrings
-	aud, err = token.Claims.GetAudience()
-	if err != nil {
-		return
-	}
-	id, err := strconv.Atoi(aud[0])
-	if err != nil {
-		return
-	}
-	ans = uint(id)
+	aud, _ = token.Claims.GetAudience()
+	id, _ := strconv.Atoi(aud[0])
+	res = uint(id)
 	return
 }
