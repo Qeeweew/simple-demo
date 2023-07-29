@@ -5,12 +5,11 @@ import "gorm.io/gorm"
 // User 用户表
 type User struct {
 	gorm.Model
-	Name            string `gorm:"not null;unique;index"`
-	Username        string `gorm:"not null;unique;index"`
-	Password        string `gorm:"not null"`
-	Avatar          string `gorm:"not null"`
-	BackgroundImage string `gorm:"not null"`
-	Signature       string
+	Name     string `gorm:"not null;unique;index"`
+	Password string `gorm:"not null"`
+	// Avatar          string `gorm:"not null"`
+	// BackgroundImage string `gorm:"not null"`
+	// Signature       string
 
 	Follows []*User `gorm:"many2many:follows;"`
 	Fans    []*User `gorm:"many2many:follows;joinForeignKey:follow_id;"`
@@ -35,7 +34,7 @@ type Comment struct {
 	Content string `gorm:"not null"`
 	UserID  uint
 
-	VideoId uint
+	VideoID uint
 }
 
 // Favor 点赞表
@@ -43,9 +42,7 @@ type Favor struct {
 	gorm.Model
 	UserID uint
 
-	// belongs to
 	VideoID uint
-	Video   Video
 }
 
 // Message 聊天消息表
