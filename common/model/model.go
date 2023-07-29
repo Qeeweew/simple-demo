@@ -59,3 +59,17 @@ type Friend struct {
 	UserId   int64 `gorm:"index"`
 	FriendId int64 `gorm:"index"`
 }
+
+// UserService : represent the user's services
+type UserService interface {
+	Login(user *User) error
+	Register(user *User) error
+	Info(userID uint, targetID uint, user *User) (bool, error)
+}
+
+// UserRepository : represent the user's repository contract
+type UserRepository interface {
+	Save(user *User) error
+	FindByID(userID uint, user *User) error
+	FindByName(name string, user *User) error
+}
