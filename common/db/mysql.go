@@ -49,8 +49,9 @@ func AutoCreateTable() {
 		&model.User{},
 		&model.Video{},
 		&model.Comment{},
-		&model.Follow{},
 		&model.Favor{},
+		&model.Friend{},
+		&model.Message{},
 	)
 
 }

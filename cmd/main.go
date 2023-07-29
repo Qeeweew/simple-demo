@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"simple-demo/common/config"
 	"simple-demo/common/db"
 	"simple-demo/common/log"
-
-	"github.com/gin-gonic/gin"
 )
 
 func init() {
