@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"simple-demo/common/db"
 	"simple-demo/common/model"
+	"simple-demo/repository"
+	"simple-demo/service"
 	"simple-demo/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 var usersLoginInfo = map[string]User{
@@ -32,82 +33,56 @@ type UserResponse struct {
 	User User `json:"user"`
 }
 
-func Register(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
+func getService() model.UserService {
+	return service.NewUserService(repository.NewUserRepository(db.MySQL.Model(&model.User{})))
+}
 
-	var user = model.User{
-		Name:     username,
-		Password: password,
-	}
-	err := db.MySQL.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("name = ?", username).First(&user).Error; err != nil {
-			//找不到
-			err := tx.Create(&user).Error
-			if err != nil {
-				return err
-			}
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 0},
-				UserId:   int64(user.ID),
-				Token:    utils.CreateToken(user.ID),
-			})
-		} else {
-			//找到
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
-			})
-		}
-		return nil
-	})
+func Register(c *gin.Context) {
+	var user model.User
+	user.Name = c.Query("username")
+	user.Password = c.Query("password")
+	err := getService().Register(&user)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "tx failed"},
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
+		})
+	} else {
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{StatusCode: 0},
+			UserId:   int64(user.ID),
+			Token:    utils.CreateToken(user.ID),
 		})
 	}
 }
 
 func Login(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
-
 	var user model.User
-
-	if err := db.MySQL.Where("name = ?", username).First(&user).Error; err != nil {
-		//找不到
+	user.Name = c.Query("username")
+	user.Password = c.Query("password")
+	err := getService().Login(&user)
+	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 	} else {
-		//找到
-		if user.Password == password {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 0},
-				UserId:   int64(user.ID),
-				Token:    utils.CreateToken(user.ID),
-			})
-		} else {
-			c.JSON(http.StatusOK, UserLoginResponse{
-				Response: Response{StatusCode: 2, StatusMsg: "Wrong password"},
-			})
-		}
+		c.JSON(http.StatusOK, UserLoginResponse{
+			Response: Response{StatusCode: 0},
+			UserId:   int64(user.ID),
+			Token:    utils.CreateToken(user.ID),
+		})
 	}
 }
 
 func UserInfo(c *gin.Context) {
 	targetID, _ := strconv.Atoi(c.Query("user_id"))
-	userID, _ := c.Keys["auth_id"]
-
+	userID, _ := c.Keys["auth_id"].(uint)
 	var targetUser model.User
-	if err := db.MySQL.Where("id = ?", targetID).First(&targetUser).Error; err != nil {
+	isFollow, err := getService().Info(userID, uint(targetID), &targetUser)
+	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
 		})
 	} else {
-		// 发起请求的user
-		var user model.User
-		db.MySQL.First(&user, "ID = ?", userID)
-		var isFollow = db.MySQL.Model(&user).Where("follows.user_id = ? AND user.id = ?", targetID, userID).Association("Follows").Count() > 0
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User: User{
