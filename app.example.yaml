@@ -7,9 +7,10 @@
 app:
   port: 8080      # server 启动时使用的端口
   host: localhost # host
-  jwtSecret:
+  jwtSecret: 114514
   release: false
   runMode: debug  # gin 启动模式
+  videoPath: ./public/videos #用户上传视频保存位置
 
 db:
   mysql:
