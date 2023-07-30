@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"path"
 	"simple-demo/controller"
 	"simple-demo/utils"
 
@@ -23,6 +24,9 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 				c.Next()
 				return
 			}
+		}
+		if matches, _ := path.Match("/videos/*", c.FullPath()); matches {
+			return
 		}
 
 		tokenString := c.Query("token")

@@ -21,5 +21,5 @@ func main() {
 
 	initRouter(r)
 
-	r.Run(fmt.Sprintf("%s:%s", config.AppCfg.Host, config.AppCfg.Port))
+	r.Run(fmt.Sprintf(":%s", config.AppCfg.Port))
 }
