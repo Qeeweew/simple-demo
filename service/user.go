@@ -7,27 +7,27 @@ import (
 )
 
 type userService struct {
-	userRepository model.UserRepository
+	repository model.UserRepository
 }
 
 var (
-	instance *userService
-	once     sync.Once
+	userInstance *userService
+	userOnce     sync.Once
 )
 
-// NewUserService: construction function, injected by user repository
+// NewService: construction function, injected by user repository
 func NewUserService(r model.UserRepository) model.UserService {
-	once.Do(func() {
-		instance = &userService{
-			userRepository: r,
+	userOnce.Do(func() {
+		userInstance = &userService{
+			repository: r,
 		}
 	})
-	return instance
+	return userInstance
 }
 
 func (u *userService) Login(user *model.User) error {
 	password := user.Password
-	err := u.userRepository.FindByName(user.Name, user, 0)
+	err := u.repository.FindByName(user.Name, user, 0)
 	if err != nil {
 		return err
 	}
@@ -38,18 +38,20 @@ func (u *userService) Login(user *model.User) error {
 }
 
 func (u *userService) Register(user *model.User) error {
-	return u.userRepository.Save(user)
+	return u.repository.Save(user)
 }
 
-func (u *userService) Info(userID uint, targetID uint, user *model.User) (isFollow bool, err error) {
-	err = u.userRepository.FindByID(targetID, user, 3)
+func (u *userService) Info(userID uint, targetID uint, user *model.User) (err error) {
+	err = u.repository.FindByID(targetID, user, 3)
 	if err != nil {
 		return
 	}
 	for _, fan := range user.Fans {
 		if fan.ID == userID {
-			isFollow = true
+			user.IsFollow = true
 		}
 	}
+	user.FollowCount = len(user.Follows)
+	user.FanCount = len(user.Fans)
 	return
 }
