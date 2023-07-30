@@ -1,6 +1,7 @@
 package main
 
 import (
+	"simple-demo/common/config"
 	"simple-demo/controller"
 	"simple-demo/middleware"
 
@@ -12,7 +13,7 @@ func initRouter(r *gin.Engine) {
 	r.Use(middleware.JWTAuthMiddleware())
 
 	// 用于存放视频
-	r.Static("/videos", "./public/videos")
+	r.Static("/videos", config.AppCfg.VideoPath)
 
 	apiRouter := r.Group("/douyin")
 

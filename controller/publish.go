@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"simple-demo/common/config"
 	"simple-demo/common/model"
 	"simple-demo/service"
 	"strconv"
@@ -30,8 +31,8 @@ func Publish(c *gin.Context) {
 		return
 	}
 	filename := filepath.Base(data.Filename)
-	finalName := fmt.Sprintf("%d/%s", userID, filename)
-	saveFile := filepath.Join("./public/videos/", finalName)
+	finalName := fmt.Sprintf("%d-%s", userID, filename)
+	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
 	logrus.Println("save file: ", saveFile)
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		c.JSON(http.StatusOK, Response{
@@ -47,7 +48,7 @@ func Publish(c *gin.Context) {
 	var video = model.Video{
 		UserId:  userID,
 		Title:   title,
-		PlayUrl: fmt.Sprintf("http://%s/videos/%d/%s", c.Request.Host, userID, filename),
+		PlayUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
 	}
 	logrus.Println("video url: ", video.PlayUrl)
 	service.GetVideo().Publish(&video)
