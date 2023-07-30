@@ -1,18 +1,27 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"database/sql"
+
+	"gorm.io/gorm"
+)
 
 // User 用户表
 type User struct {
 	gorm.Model
 	Name     string `gorm:"not null;unique;index"`
 	Password string `gorm:"not null"`
-	// Avatar          string `gorm:"not null"`
-	// BackgroundImage string `gorm:"not null"`
-	// Signature       string
 
 	Follows []*User `gorm:"many2many:follows;"`
 	Fans    []*User `gorm:"many2many:follows;joinForeignKey:follow_id;"`
+
+	// gorm会忽略，用于保存结果、转换到Controlle.User
+	FollowCount     int    `gorm:"-:all"`
+	FanCount        int    `gorm:"-:all"`
+	Avatar          string `gorm:"-:all"`
+	BackgroundImage string `gorm:"-:all"`
+	Signature       string `gorm:"-:all"`
+	IsFollow        bool   `gorm:"-:all"`
 }
 
 // Video 视频表
@@ -26,6 +35,11 @@ type Video struct {
 	// has many
 	Comments []Comment
 	Favors   []Favor
+
+	// gorm会忽略，用于保存结果、转换到Controlle.Video
+	FavoriteCount int  `gorm:"-:all"`
+	CommentCount  int  `gorm:"-:all"`
+	IsFavorite    bool `gorm:"-:all"`
 }
 
 // Comment 评论表
@@ -60,16 +74,36 @@ type Friend struct {
 	FriendId int64 `gorm:"index"`
 }
 
+type TransactionOperation interface {
+	Begin(opts ...*sql.TxOptions) *gorm.DB
+	Rollback() *gorm.DB
+	Commit() *gorm.DB
+}
+
 // UserService : represent the user's services
 type UserService interface {
 	Login(user *User) error
 	Register(user *User) error
-	Info(userID uint, targetID uint, user *User) (bool, error)
+	Info(userID uint, targetID uint, user *User) error
 }
 
 // UserRepository : represent the user's repository contract
 type UserRepository interface {
+	TransactionOperation
 	Save(user *User) error
 	FindByID(userID uint, user *User, preload uint) error
 	FindByName(name string, user *User, preload uint) error
+}
+
+type VideoService interface {
+	Publish(video *Video) error
+	GetPublishList(userID uint) ([]Video, error)
+	GetFeedList(userID uint) ([]Video, error)
+}
+
+type VideoRepository interface {
+	TransactionOperation
+	Save(*Video) error
+	FindListByUserID(uint, *[]Video, uint) error
+	FeedList(uint, *[]Video) error
 }
