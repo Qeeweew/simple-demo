@@ -26,6 +26,9 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := c.Query("token")
+		if c.FullPath() == "/douyin/publish/action/" {
+			tokenString = c.PostForm("token")
+		}
 		if tokenString == "" {
 			c.JSON(http.StatusOK, controller.Response{
 				StatusCode: 1,
