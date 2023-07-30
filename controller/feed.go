@@ -19,7 +19,7 @@ type FeedResponse struct {
 // 点赞还没搞
 func Feed(c *gin.Context) {
 	videos, err := service.GetVideo().GetFeedList(30)
-	userID := c.Keys["auth_id"].(uint)
+	userID := uint(0) //c.Keys["auth_id"].(uint)
 	if err != nil {
 		RegisterError(err, c)
 		return

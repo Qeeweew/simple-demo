@@ -40,7 +40,7 @@ func (v *videoRepository) FindListByUserID(userID uint, videos *[]model.Video, p
 }
 
 func (v *videoRepository) FeedList(limit uint, videos *[]model.Video) error {
-	err := v.Preload("Comment").Preload("Favors").Limit(int(limit)).Order("created_at DESC").Find(videos).Error
+	err := v.Preload("Comments").Preload("Favors").Limit(int(limit)).Order("created_at DESC").Find(videos).Error
 	if err != nil {
 		return err
 	}
