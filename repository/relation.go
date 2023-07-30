@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"gorm.io/gorm"
 	"simple-demo/common/model"
+
+	"gorm.io/gorm"
 )
 
 type relationRepository struct {

@@ -5,6 +5,7 @@ import (
 	"simple-demo/common/log"
 	"simple-demo/common/model"
 	"simple-demo/utils"
+	"sync"
 )
 
 type relationService struct {
@@ -13,6 +14,7 @@ type relationService struct {
 
 var (
 	ErrFollowSelf = errors.New("can not follow yourself")
+	relationOnce  sync.Once
 )
 
 const (
@@ -104,7 +106,7 @@ var (
 )
 
 func NewRelationService(r model.RelationRepository) model.RelationService {
-	once.Do(func() {
+	relationOnce.Do(func() {
 		relationInstance = &relationService{
 			relationRepository: r,
 		}

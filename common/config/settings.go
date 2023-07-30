@@ -12,6 +12,7 @@ type App struct {
 	JwtSecret string
 	Release   string
 	RunMode   string
+	VideoPath string
 }
 
 type Mysql struct {
