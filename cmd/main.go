@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"simple-demo/common/config"
 	"simple-demo/common/db"
 	"simple-demo/common/log"
+
+	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -20,5 +21,5 @@ func main() {
 
 	initRouter(r)
 
-	r.Run(fmt.Sprintf("%s:%s", config.AppCfg.Host, config.AppCfg.Port))
+	r.Run(fmt.Sprintf(":%s", config.AppCfg.Port))
 }

@@ -7,17 +7,17 @@ import (
 )
 
 type userRepository struct {
-	DB *gorm.DB
+	*gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) model.UserRepository {
 	return &userRepository{
-		DB: db,
+		db,
 	}
 }
 
 func (u *userRepository) Save(user *model.User) error {
-	return u.DB.Create(user).Error
+	return u.Create(user).Error
 }
 
 func (u *userRepository) FindByID(userID uint, user *model.User, preload uint) error {
@@ -30,6 +30,7 @@ func (u *userRepository) FindByID(userID uint, user *model.User, preload uint) e
 	}
 	return db.First(user, "id = ?", userID).Error
 }
+
 func (u *userRepository) FindByName(username string, user *model.User, preload uint) error {
 	var db = u.DB
 	if preload&1 != 0 {
