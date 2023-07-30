@@ -30,7 +30,7 @@ type Video struct {
 	UserId   uint   `gorm:"not null;index"`
 	Title    string `gorm:"not null;index"`
 	PlayUrl  string `gorm:"not null"`
-	CoverUrl string `gorm:"not null"`
+	CoverUrl string // `gorm:"not null"`
 
 	// has many
 	Comments []Comment
