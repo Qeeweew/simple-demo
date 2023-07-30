@@ -21,8 +21,10 @@ var (
 	FeedErrorStatus         = newStatus(40009, "获取视频流出错")
 	EmptyErrorStatus        = newStatus(40010, "用户名或密码为空") // should be useless
 	FollowErrorStatus       = newStatus(40011, "关注失败")
-	FavoriteErrorStatus     = newStatus(40012, "点赞失败")
-	FollowListErrorStatus   = newStatus(40013, "获取关注列表时发生了错误")
+	UnFollowErrorStatus     = newStatus(40012, "取消关注失败")
+	FavoriteErrorStatus     = newStatus(40013, "点赞失败")
+	FollowListErrorStatus   = newStatus(40014, "获取关注列表时发生了错误")
+	FollowerListErrorStatus = newStatus(40015, "获取粉丝列表时发生了错误")
 
 	// 401 WITHOUT PERMISSION
 	NoLoginErrorStatus = newStatus(40101, "用户未登录")

@@ -87,7 +87,7 @@ func initRouter(r *gin.Engine) {
 		// 获取用户粉丝列表
 		relationGroup.GET("/follower/list/", controller.FollowerList)
 
-		// 获取用户好友列表
-		relationGroup.GET("/friend/list/", controller.FriendList)
+		// TODO: 获取用户好友列表
+		//relationGroup.GET("/friend/list/", controller.FriendList)
 	}
 }

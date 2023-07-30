@@ -73,3 +73,19 @@ type UserRepository interface {
 	FindByID(userID uint, user *User, preload uint) error
 	FindByName(name string, user *User, preload uint) error
 }
+
+type RelationService interface {
+	FollowAction(token string, toUserId uint, actionType int) error
+	FollowList(token string, userId uint) ([]*User, error)
+	FanList(token string, userId uint) ([]*User, error)
+	// TODO: 用户好友列表
+	// ...
+}
+
+type RelationRepository interface {
+	CheckFollowRelationship(userId uint, toUserId uint) (bool, error)
+	Follow(userId uint, toUserId uint) error
+	UnFollow(userId uint, toUserId uint) error
+	FollowList(userId uint) ([]*User, error)
+	FanList(userId uint) ([]*User, error)
+}

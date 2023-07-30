@@ -14,7 +14,7 @@ var skipPaths = []string{
 	"/douyin/user/login/",
 }
 
-// auth_id 记录token对应的用户也就是发起请求的用户的id
+// JWTAuthMiddleware auth_id 记录token对应的用户也就是发起请求的用户的id
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 跳过不需要鉴权的

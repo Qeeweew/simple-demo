@@ -21,7 +21,6 @@ func Init() {
 				zapcore.Lock(os.Stdout), zapcore.DebugLevel),
 		)
 		Logger = zap.New(core, zap.AddCaller())
-		fileLog()
 	} else {
 		fileLog()
 	}
