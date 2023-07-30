@@ -1,5 +1,12 @@
 package controller
 
+import (
+	"net/http"
+	"simple-demo/common/model"
+
+	"github.com/gin-gonic/gin"
+)
+
 type Response struct {
 	StatusCode int32  `json:"status_code"`
 	StatusMsg  string `json:"status_msg,omitempty"`
@@ -45,4 +52,32 @@ type MessageSendEvent struct {
 type MessagePushEvent struct {
 	FromUserId int64  `json:"user_id,omitempty"`
 	MsgContent string `json:"msg_content,omitempty"`
+}
+
+func FromVideoModel(video *model.Video, author *model.User) Video {
+	return Video{
+		Id:            int64(video.ID),
+		Author:        FromUserModel(author),
+		PlayUrl:       video.PlayUrl,
+		CoverUrl:      video.CoverUrl,
+		FavoriteCount: int64(video.FavoriteCount),
+		CommentCount:  int64(video.CommentCount),
+		IsFavorite:    video.IsFavorite,
+	}
+}
+
+// need to initialize isFollow
+func FromUserModel(user *model.User) User {
+	return User{
+		Id:            int64(user.ID),
+		Name:          user.Name,
+		FollowCount:   int64(user.FollowCount),
+		FollowerCount: int64(user.FanCount),
+		IsFollow:      user.IsFollow,
+	}
+}
+
+func RegisterError(err error, c *gin.Context) {
+	c.JSON(http.StatusOK, FeedResponse{
+		Response: Response{StatusCode: 1, StatusMsg: err.Error()}})
 }
