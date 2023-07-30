@@ -12,7 +12,7 @@ func initRouter(r *gin.Engine) {
 	r.Use(middleware.JWTAuthMiddleware())
 
 	// 用于存放视频
-	r.Static("/videos", "./data/videos")
+	r.Static("/videos", "./public/videos")
 
 	apiRouter := r.Group("/douyin")
 

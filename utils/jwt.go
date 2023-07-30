@@ -2,13 +2,14 @@ package utils
 
 import (
 	"fmt"
+	"simple-demo/common/config"
 	"strconv"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 )
 
-var SecretKey = []byte("1111222233334444")
+var SecretKey = []byte(config.AppCfg.JwtSecret)
 
 func CreateToken(userID uint) string {
 	t, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
