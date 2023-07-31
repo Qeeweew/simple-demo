@@ -58,7 +58,13 @@ func Publish(c *gin.Context) {
 // isFavorate 还没有处理
 func PublishList(c *gin.Context) {
 	targetID, _ := strconv.Atoi(c.Query("user_id"))
-	userID := c.Keys["auth_id"].(uint)
+	val, found := c.Keys["auth_id"]
+	var userID uint
+	if found {
+		userID = val.(uint)
+	} else {
+		userID = 0
+	}
 	videos, err := service.GetVideo().GetPublishList(userID)
 	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
