@@ -74,12 +74,14 @@ type Friend struct {
 	FriendId int64 `gorm:"index"`
 }
 
+// 提供访问Repository的接口
 type ServiceBase interface {
 	User(ctx context.Context) UserRepository
 	Video(ctx context.Context) VideoRepository
 	Relation(ctx context.Context) RelationRepository
 }
 
+// Service启动Transaction的接口
 type ITransaction interface {
 	Transaction(ctx context.Context, fn func(txctx context.Context) error) error
 }
