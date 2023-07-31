@@ -51,21 +51,27 @@ func Publish(c *gin.Context) {
 		PlayUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
 	}
 	logrus.Println("video url: ", video.PlayUrl)
-	service.GetVideo().Publish(&video)
+	service.NewVideo().Publish(&video)
 }
 
 // PublishList all users have same publish video list
 // isFavorate 还没有处理
 func PublishList(c *gin.Context) {
 	targetID, _ := strconv.Atoi(c.Query("user_id"))
-	userID := c.Keys["auth_id"].(uint)
-	videos, err := service.GetVideo().GetPublishList(userID)
+	val, found := c.Keys["auth_id"]
+	var userID uint
+	if found {
+		userID = val.(uint)
+	} else {
+		userID = 0
+	}
+	videos, err := service.NewVideo().GetPublishList(userID)
 	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
 		return
 	}
 	var targetUser model.User
-	err = service.GetUser().Info(userID, uint(targetID), &targetUser)
+	err = service.NewUser().Info(userID, uint(targetID), &targetUser)
 	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
 		return

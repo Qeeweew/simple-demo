@@ -1,12 +1,16 @@
 package service
 
 import (
+	"context"
 	"simple-demo/common/model"
+	"simple-demo/repository"
+	"simple-demo/repository/dbcore"
 	"sync"
 )
 
 type videoService struct {
-	repository model.VideoRepository
+	model.ServiceBase
+	tximpl model.ITransaction
 }
 
 var (
@@ -14,24 +18,25 @@ var (
 	videoOnce     sync.Once
 )
 
-func NewVideoService(r model.VideoRepository) model.VideoService {
+func NewVideo() model.VideoService {
 	videoOnce.Do(func() {
 		videoInstance = &videoService{
-			repository: r,
+			repository.NewTableVistor(),
+			dbcore.NewTxImpl(),
 		}
 	})
 	return videoInstance
 }
 
 func (v *videoService) Publish(video *model.Video) error {
-	return v.repository.Save(video)
+	return v.Video(context.Background()).Save(video)
 }
 func (v *videoService) GetPublishList(userID uint) (videos []model.Video, err error) {
-	err = v.repository.FindListByUserID(userID, &videos, 3)
+	err = v.Video(context.Background()).FindListByUserID(userID, &videos, 3)
 	return
 }
 
 func (v *videoService) GetFeedList(limit uint) (videos []model.Video, err error) {
-	err = v.repository.FeedList(limit, &videos)
+	err = v.Video(context.Background()).FeedList(limit, &videos)
 	return
 }

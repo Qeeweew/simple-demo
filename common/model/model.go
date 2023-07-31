@@ -1,7 +1,7 @@
 package model
 
 import (
-	"database/sql"
+	"context"
 
 	"gorm.io/gorm"
 )
@@ -74,14 +74,19 @@ type Friend struct {
 	FriendId int64 `gorm:"index"`
 }
 
-type TransactionOperation interface {
-	Begin(opts ...*sql.TxOptions) *gorm.DB
-	Rollback() *gorm.DB
-	Commit() *gorm.DB
+type ServiceBase interface {
+	User(ctx context.Context) UserRepository
+	Video(ctx context.Context) VideoRepository
+	Relation(ctx context.Context) RelationRepository
+}
+
+type ITransaction interface {
+	Transaction(ctx context.Context, fn func(txctx context.Context) error) error
 }
 
 // UserService : represent the user's services
 type UserService interface {
+	ServiceBase
 	Login(user *User) error
 	Register(user *User) error
 	Info(userID uint, targetID uint, user *User) error
@@ -89,26 +94,26 @@ type UserService interface {
 
 // UserRepository : represent the user's repository contract
 type UserRepository interface {
-	TransactionOperation
 	Save(user *User) error
 	FindByID(userID uint, user *User, preload uint) error
 	FindByName(name string, user *User, preload uint) error
 }
 
 type VideoService interface {
+	ServiceBase
 	Publish(video *Video) error
 	GetPublishList(userID uint) ([]Video, error)
 	GetFeedList(userID uint) ([]Video, error)
 }
 
 type VideoRepository interface {
-	TransactionOperation
 	Save(*Video) error
 	FindListByUserID(uint, *[]Video, uint) error
 	FeedList(uint, *[]Video) error
 }
 
 type RelationService interface {
+	ServiceBase
 	FollowAction(token string, toUserId uint, actionType int) error
 	FollowList(token string, userId uint) ([]*User, error)
 	FanList(token string, userId uint) ([]*User, error)

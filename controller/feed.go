@@ -18,7 +18,7 @@ type FeedResponse struct {
 // Feed same demo video list for every request
 // 点赞还没搞
 func Feed(c *gin.Context) {
-	videos, err := service.GetVideo().GetFeedList(30)
+	videos, err := service.NewVideo().GetFeedList(30)
 	userID := uint(0) //c.Keys["auth_id"].(uint)
 	if err != nil {
 		RegisterError(err, c)
@@ -27,7 +27,7 @@ func Feed(c *gin.Context) {
 	var ctlVideos []Video
 	for i := range videos {
 		var author model.User
-		err = service.GetUser().Info(userID, videos[i].UserId, &author)
+		err = service.NewUser().Info(userID, videos[i].UserId, &author)
 		if err != nil {
 			RegisterError(err, c)
 			return

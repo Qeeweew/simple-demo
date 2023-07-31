@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"simple-demo/common/config"
-	"simple-demo/common/db"
 	"simple-demo/common/log"
+	"simple-demo/repository/dbcore"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +13,7 @@ func init() {
 	config.ReadCfg()
 	config.Init()
 	log.Init()
-	db.Init()
+	dbcore.Init()
 }
 
 func main() {
