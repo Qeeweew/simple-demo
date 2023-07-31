@@ -35,7 +35,7 @@ func Register(c *gin.Context) {
 	var user model.User
 	user.Name = c.Query("username")
 	user.Password = c.Query("password")
-	err := service.GetUser().Register(&user)
+	err := service.NewUser().Register(&user)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -53,7 +53,7 @@ func Login(c *gin.Context) {
 	var user model.User
 	user.Name = c.Query("username")
 	user.Password = c.Query("password")
-	err := service.GetUser().Login(&user)
+	err := service.NewUser().Login(&user)
 	if err != nil {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
@@ -71,7 +71,7 @@ func UserInfo(c *gin.Context) {
 	targetID, _ := strconv.Atoi(c.Query("user_id"))
 	userID, _ := c.Keys["auth_id"].(uint)
 	var targetUser model.User
-	err := service.GetUser().Info(userID, uint(targetID), &targetUser)
+	err := service.NewUser().Info(userID, uint(targetID), &targetUser)
 	if err != nil {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 1, StatusMsg: err.Error()},

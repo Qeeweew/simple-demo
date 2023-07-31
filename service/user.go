@@ -1,13 +1,17 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"simple-demo/common/model"
+	"simple-demo/repository"
+	"simple-demo/repository/dbcore"
 	"sync"
 )
 
 type userService struct {
-	repository model.UserRepository
+	model.ServiceBase
+	tximpl model.ITransaction
 }
 
 var (
@@ -16,10 +20,11 @@ var (
 )
 
 // NewService: construction function, injected by user repository
-func NewUserService(r model.UserRepository) model.UserService {
+func NewUser() model.UserService {
 	userOnce.Do(func() {
 		userInstance = &userService{
-			repository: r,
+			repository.NewTableVistor(),
+			dbcore.NewTxImpl(),
 		}
 	})
 	return userInstance
@@ -27,7 +32,7 @@ func NewUserService(r model.UserRepository) model.UserService {
 
 func (u *userService) Login(user *model.User) error {
 	password := user.Password
-	err := u.repository.FindByName(user.Name, user, 0)
+	err := u.User(context.Background()).FindByName(user.Name, user, 0)
 	if err != nil {
 		return err
 	}
@@ -38,11 +43,11 @@ func (u *userService) Login(user *model.User) error {
 }
 
 func (u *userService) Register(user *model.User) error {
-	return u.repository.Save(user)
+	return u.User(context.Background()).Save(user)
 }
 
 func (u *userService) Info(userID uint, targetID uint, user *model.User) (err error) {
-	err = u.repository.FindByID(targetID, user, 3)
+	err = u.User(context.Background()).FindByID(targetID, user, 3)
 	if err != nil {
 		return
 	}
