@@ -1,13 +1,11 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
-	"simple-demo/common/db"
 	"simple-demo/common/log"
-	"simple-demo/common/model"
 	"simple-demo/common/result"
-	"simple-demo/repository"
 	"simple-demo/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RelationActionReq struct {
@@ -19,10 +17,6 @@ type RelationActionReq struct {
 type RelationListReq struct {
 	UserId uint   `form:"user_id"`
 	Token  string `form:"token"`
-}
-
-func getRelationService() model.RelationService {
-	return service.NewRelationService(repository.NewRelationRepository(db.MySQL))
 }
 
 // RelationAction no practical effect, just check if token is valid
@@ -43,7 +37,7 @@ func RelationAction(c *gin.Context) {
 		return
 	}
 
-	err = getRelationService().FollowAction(req.Token, req.ToUserId, req.ActionType)
+	err = service.GetRelation().FollowAction(req.Token, req.ToUserId, req.ActionType)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		if req.ActionType == 1 {
@@ -83,7 +77,7 @@ func FollowList(c *gin.Context) {
 	}
 
 	// 获取关注列表
-	followList, err := getRelationService().FollowList(req.Token, req.UserId)
+	followList, err := service.GetRelation().FollowList(req.Token, req.UserId)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		result.Error(c, result.Status{
@@ -117,7 +111,7 @@ func FollowerList(c *gin.Context) {
 	}
 
 	// 获取粉丝列表
-	followerList, err := getRelationService().FanList(req.Token, req.UserId)
+	followerList, err := service.GetRelation().FanList(req.Token, req.UserId)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		result.Error(c, result.Status{

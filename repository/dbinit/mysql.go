@@ -1,4 +1,4 @@
-package db
+package dbinit
 
 import (
 	"fmt"
@@ -12,9 +12,9 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-func MySQLInit() {
+func MySQLInit() *gorm.DB {
 	var err error
-	MySQL, err = createDB(struct {
+	MySQL, err := createDB(struct {
 		Addr string
 		User string
 		Pass string
@@ -40,12 +40,13 @@ func MySQLInit() {
 	// TODO: model层设计好之后放开注释
 
 	// 自动建表
-	AutoCreateTable()
+	AutoCreateTable(MySQL)
+	return MySQL
 }
 
 // AutoCreateTable TODO: model层设计好之后修改自动建表的逻辑
-func AutoCreateTable() {
-	_ = MySQL.AutoMigrate(
+func AutoCreateTable(db *gorm.DB) {
+	_ = db.AutoMigrate(
 		&model.User{},
 		&model.Video{},
 		&model.Comment{},
