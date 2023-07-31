@@ -39,36 +39,38 @@ func (r *relationService) FollowAction(token string, toUserId uint, actionType i
 		return err
 	}
 
-	// 用户不能关注自己
-	if userId == toUserId {
-		log.Logger.Error("can not follow yourself")
-		return ErrFollowSelf
-	}
+	return r.tximpl.Transaction(context.Background(), func(txctx context.Context) error {
+		// 用户不能关注自己
+		if userId == toUserId {
+			log.Logger.Error("can not follow yourself")
+			return ErrFollowSelf
+		}
 
-	// 查询关注关系
-	isFollow, err := r.Relation(context.Background()).CheckFollowRelationship(userId, toUserId)
-	if err != nil {
-		log.Logger.Error("check follow relationship error")
-		return err
-	}
-
-	// 关注
-	if actionType == doFollow && !isFollow {
-		if err := r.Relation(context.Background()).Follow(userId, toUserId); err != nil {
-			log.Logger.Error("follow error")
+		// 查询关注关系
+		isFollow, err := r.Relation(txctx).CheckFollowRelationship(userId, toUserId)
+		if err != nil {
+			log.Logger.Error("check follow relationship error")
 			return err
 		}
-	}
 
-	// 取消关注
-	if actionType == unFollow && isFollow {
-		if err := r.Relation(context.Background()).UnFollow(userId, toUserId); err != nil {
-			log.Logger.Error("unfollow error")
-			return err
+		// 关注
+		if actionType == doFollow && !isFollow {
+			if err := r.Relation(txctx).Follow(userId, toUserId); err != nil {
+				log.Logger.Error("follow error")
+				return err
+			}
 		}
-	}
 
-	return nil
+		// 取消关注
+		if actionType == unFollow && isFollow {
+			if err := r.Relation(txctx).UnFollow(userId, toUserId); err != nil {
+				log.Logger.Error("unfollow error")
+				return err
+			}
+		}
+		return nil
+	})
+
 }
 
 func (r *relationService) FollowList(token string, userId uint) ([]*model.User, error) {
