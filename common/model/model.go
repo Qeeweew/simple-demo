@@ -56,8 +56,8 @@ type User struct {
 // Video 视频表
 type Video struct {
 	Id        uint      `gorm:"primarykey" json:"id,omitempty"`
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	CreatedAt time.Time `gorm:"not null" json:"-"`
+	UpdatedAt time.Time `gorm:"not null;index" json:"-"`
 	AuthorId  uint      `gorm:"not null;index" json:"-"`
 	Author    User      `gorm:"foreignKey:AuthorId" json:"author"`
 	Title     string    `gorm:"not null;index" json:"title,omitempty"`
@@ -84,7 +84,7 @@ type Comment struct {
 	Content    string    `gorm:"not null" json:"content,omitempty"`
 	UserId     uint      `gorm:"not null;index" json:"-"`
 	VideoId    uint      `gorm:"not null;index" json:"-"`
-	CreatedAt  time.Time `json:"-"`
+	CreatedAt  time.Time `gorm:"not null" json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
 	User       User      `gorm:"foreignKey:UserId"`
 }
@@ -111,7 +111,7 @@ type Message struct {
 	FromId     int64     `gorm:"index" json:"from_user_id,omitempty"`
 	ToUserId   int64     `gorm:"index" json:"to_user_id,omitempty"`
 	Content    string    `gorm:"not null" json:"content,omitempty"`
-	CreatedAt  time.Time `json:"-"`
+	CreatedAt  time.Time `gorm:"not null" json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
 }
 

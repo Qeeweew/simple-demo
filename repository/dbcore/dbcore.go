@@ -3,9 +3,9 @@ package dbcore
 import (
 	"context"
 	"reflect"
+	"simple-demo/common/log"
 	"simple-demo/repository/dbinit"
 
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -29,7 +29,7 @@ func GetDB(ctx context.Context) *gorm.DB {
 	if iface != nil {
 		tx, ok := iface.(*gorm.DB)
 		if !ok {
-			logrus.Panicf("unexpect context value type: %s", reflect.TypeOf(tx))
+			log.Logger.Sugar().Panicf("unexpect context value type: %s", reflect.TypeOf(tx))
 			return nil
 		}
 		return tx

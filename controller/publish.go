@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"path/filepath"
 	"simple-demo/common/config"
+	"simple-demo/common/log"
 	"simple-demo/common/model"
 	"simple-demo/service"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type VideoListResponse struct {
@@ -33,7 +34,7 @@ func Publish(c *gin.Context) {
 	filename := filepath.Base(data.Filename)
 	finalName := fmt.Sprintf("%d-%s", userId, filename)
 	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
-	logrus.Println("save file: ", saveFile)
+	// 暂时放这里了
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
@@ -41,6 +42,7 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
+	log.Logger.Info("Saving vido Succeed", zap.String("File", finalName))
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
 		StatusMsg:  finalName + " uploaded successfully",
@@ -50,7 +52,7 @@ func Publish(c *gin.Context) {
 		Title:    title,
 		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
 	}
-	logrus.Println("video url: ", video.PlayUrl)
+	log.Logger.Info("Publish video", zap.String("video url", video.PlayUrl))
 	service.NewVideo().Publish(&video)
 }
 
