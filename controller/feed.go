@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"simple-demo/common/model"
 	"simple-demo/service"
 	"time"
 
@@ -16,27 +15,15 @@ type FeedResponse struct {
 }
 
 // Feed same demo video list for every request
-// 点赞还没搞
 func Feed(c *gin.Context) {
 	videos, err := service.NewVideo().GetFeedList(30)
-	userID := uint(0) //c.Keys["auth_id"].(uint)
 	if err != nil {
-		RegisterError(err, c)
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
 		return
-	}
-	var ctlVideos []Video
-	for i := range videos {
-		var author model.User
-		err = service.NewUser().Info(userID, videos[i].UserId, &author)
-		if err != nil {
-			RegisterError(err, c)
-			return
-		}
-		ctlVideos = append(ctlVideos, FromVideoModel(&videos[i]))
 	}
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  Response{StatusCode: 0},
-		VideoList: ctlVideos,
+		VideoList: videos,
 		NextTime:  time.Now().Unix(),
 	})
 }

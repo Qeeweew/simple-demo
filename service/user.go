@@ -52,7 +52,7 @@ func (u *userService) Info(userID uint, targetID uint, user *model.User) (err er
 		return
 	}
 	for _, fan := range user.Fans {
-		if fan.ID == userID {
+		if fan.Id == userID {
 			user.IsFollow = true
 		}
 	}
