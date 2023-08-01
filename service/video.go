@@ -32,7 +32,7 @@ func (v *videoService) Publish(video *model.Video) error {
 	return v.Video(context.Background()).Save(video)
 }
 func (v *videoService) GetPublishList(userID uint) (videos []model.Video, err error) {
-	err = v.Video(context.Background()).FindListByUserID(userID, &videos, 3)
+	err = v.Video(context.Background()).FindListByUserID(userID, &videos)
 	return
 }
 

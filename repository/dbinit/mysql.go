@@ -50,8 +50,8 @@ func AutoCreateTable(db *gorm.DB) {
 		&model.User{},
 		&model.Video{},
 		&model.Comment{},
-		&model.Favor{},
-		&model.Friend{},
+		&model.Favorite{},
+		// &model.Friend{},
 		&model.Message{},
 	)
 
