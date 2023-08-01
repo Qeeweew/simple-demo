@@ -54,10 +54,10 @@ type MessagePushEvent struct {
 	MsgContent string `json:"msg_content,omitempty"`
 }
 
-func FromVideoModel(video *model.Video, author *model.User) Video {
+func FromVideoModel(video *model.Video) Video {
 	return Video{
 		Id:            int64(video.ID),
-		Author:        FromUserModel(author),
+		Author:        FromUserModel(&video.Author),
 		PlayUrl:       video.PlayUrl,
 		CoverUrl:      video.CoverUrl,
 		FavoriteCount: int64(video.FavoriteCount),

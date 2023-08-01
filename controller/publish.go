@@ -18,7 +18,7 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list"`
 }
 
-// Publish check token then save upload file to public directory
+// Publish save upload file to public directory
 func Publish(c *gin.Context) {
 	userID := c.Keys["auth_id"].(uint)
 	title := c.PostForm("title")
@@ -78,7 +78,7 @@ func PublishList(c *gin.Context) {
 	}
 	var ctlVideos []Video
 	for _, video := range videos {
-		ctlVideos = append(ctlVideos, FromVideoModel(&video, &targetUser))
+		ctlVideos = append(ctlVideos, FromVideoModel(&video))
 	}
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response:  Response{StatusCode: 0},

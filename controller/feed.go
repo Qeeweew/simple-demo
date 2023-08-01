@@ -32,7 +32,7 @@ func Feed(c *gin.Context) {
 			RegisterError(err, c)
 			return
 		}
-		ctlVideos = append(ctlVideos, FromVideoModel(&videos[i], &author))
+		ctlVideos = append(ctlVideos, FromVideoModel(&videos[i]))
 	}
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  Response{StatusCode: 0},
