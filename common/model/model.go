@@ -82,8 +82,8 @@ message Comment {
 type Comment struct {
 	Id         uint      `gorm:"primarykey" json:"id,omitempty"`
 	Content    string    `gorm:"not null" json:"content,omitempty"`
-	UserID     uint      `gorm:"not null;index" json:"-"`
-	VideoID    uint      `gorm:"not null;index" json:"-"`
+	UserId     uint      `gorm:"not null;index" json:"-"`
+	VideoId    uint      `gorm:"not null;index" json:"-"`
 	CreatedAt  time.Time `json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
 	User       User      `gorm:"foreignKey:UserId"`
@@ -141,26 +141,26 @@ type UserService interface {
 	ServiceBase
 	Login(user *User) error
 	Register(user *User) error
-	Info(userID uint, targetId uint, user *User) error
+	Info(userId uint, targetId uint, user *User) error
 }
 
 // UserRepository : represent the user's repository contract
 type UserRepository interface {
 	Save(user *User) error
-	FindByID(userId uint, user *User, preload uint) error
+	FindById(userId uint, user *User, preload uint) error
 	FindByName(name string, user *User, preload uint) error
 }
 
 type VideoService interface {
 	ServiceBase
 	Publish(video *Video) error
-	GetPublishList(userID uint) ([]Video, error)
-	GetFeedList(userID uint) ([]Video, error)
+	GetPublishList(userId uint) ([]Video, error)
+	GetFeedList(userId uint) ([]Video, error)
 }
 
 type VideoRepository interface {
 	Save(*Video) error
-	FindListByUserID(uint, *[]Video) error
+	FindListByUserId(uint, *[]Video) error
 	FeedList(uint, *[]Video) error
 }
 
@@ -182,8 +182,8 @@ type RelationRepository interface {
 }
 
 type CommentRepository interface {
-	GetVideoCommentList(videoID uint) (res []Comment, err error)
-	GetVideoCommentCount(videoID uint) (res int64, err error)
+	GetVideoCommentList(videoId uint) (res []Comment, err error)
+	GetVideoCommentCount(videoId uint) (res int64, err error)
 }
 
 type CommentService interface {

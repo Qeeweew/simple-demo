@@ -20,7 +20,7 @@ func (v *videoRepository) Save(video *model.Video) error {
 	return v.Create(video).Error
 }
 
-func (v *videoRepository) FindListByUserID(userID uint, videos *[]model.Video) error {
+func (v *videoRepository) FindListByUserId(userID uint, videos *[]model.Video) error {
 	return v.Preload("Author").Find(videos, "user_id = ?", userID).Error
 }
 

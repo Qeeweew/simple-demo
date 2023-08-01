@@ -46,13 +46,13 @@ func (u *userService) Register(user *model.User) error {
 	return u.User(context.Background()).Save(user)
 }
 
-func (u *userService) Info(userID uint, targetID uint, user *model.User) (err error) {
-	err = u.User(context.Background()).FindByID(targetID, user, 3)
+func (u *userService) Info(userId uint, targetId uint, user *model.User) (err error) {
+	err = u.User(context.Background()).FindById(targetId, user, 3)
 	if err != nil {
 		return
 	}
 	for _, fan := range user.Fans {
-		if fan.Id == userID {
+		if fan.Id == userId {
 			user.IsFollow = true
 		}
 	}

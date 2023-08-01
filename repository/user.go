@@ -20,7 +20,7 @@ func (u *userRepository) Save(user *model.User) error {
 	return u.Create(user).Error
 }
 
-func (u *userRepository) FindByID(userID uint, user *model.User, preload uint) error {
+func (u *userRepository) FindById(userID uint, user *model.User, preload uint) error {
 	var db = u.DB
 	if preload&1 != 0 {
 		db = db.Preload("Follows")
