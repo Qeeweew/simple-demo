@@ -86,14 +86,14 @@ type Comment struct {
 	VideoID    uint      `gorm:"not null;index" json:"-"`
 	CreatedAt  time.Time `json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
-	User       User
+	User       User      `gorm:"foreignKey:UserId"`
 }
 
 // Favorite 点赞表
 type Favorite struct {
-	UserId  uint `gorm:"primaryKey;autoIncrement:false"`
-	VideoId uint `gorm:"primaryKey;autoIncrement:false"`
-	Video   Video
+	UserId  uint  `gorm:"primaryKey;autoIncrement:false"`
+	VideoId uint  `gorm:"primaryKey;autoIncrement:false"`
+	Video   Video `gorm:"foreignKey:VideoId"`
 }
 
 /*
