@@ -35,12 +35,12 @@ type User struct {
 	Signature       string `json:"signature,omitempty"`
 
 	// 不直接储存，需要查询得到
-	FollowCount    int  `gorm:"-:all" json:"follow_count,omitempty"`
-	FanCount       int  `gorm:"-:all" json:"follower_count,omitempty"`
-	IsFollow       bool `gorm:"-:all" json:"is_follow,omitempty"`
-	TotalFavorited int  `gorm:"-:all" json:"total_favorited,omitempty"`
-	WorkCount      int  `gorm:"-:all" json:"work_count,omitempty"`
-	FavoriteCount  int  `gorm:"-:all" json:"favorite_count,omitempty"`
+	FollowCount    int64 `gorm:"-:all" json:"follow_count,omitempty"`
+	FanCount       int64 `gorm:"-:all" json:"follower_count,omitempty"`
+	IsFollow       bool  `gorm:"-:all" json:"is_follow,omitempty"`
+	TotalFavorited int64 `gorm:"-:all" json:"total_favorited,omitempty"`
+	WorkCount      int64 `gorm:"-:all" json:"work_count,omitempty"`
+	FavoriteCount  int64 `gorm:"-:all" json:"favorite_count,omitempty"`
 }
 
 /*
@@ -65,9 +65,9 @@ type Video struct {
 	CoverUrl  string    `gorm:"not null" json:"cover_url,omitempty"`
 
 	// 不直接储存，需要后续查询得到
-	FavoriteCount int  `gorm:"-:all" json:"favorite_count,omitempty"`
-	CommentCount  int  `gorm:"-:all" json:"comment_count,omitempty"`
-	IsFavorite    bool `gorm:"-:all" json:"is_favorite,omitempty"`
+	FavoriteCount int64 `gorm:"-:all" json:"favorite_count,omitempty"`
+	CommentCount  int64 `gorm:"-:all" json:"comment_count,omitempty"`
+	IsFavorite    bool  `gorm:"-:all" json:"is_favorite,omitempty"`
 }
 
 /*
@@ -108,8 +108,8 @@ message Message {
 // Message 聊天消息表
 type Message struct {
 	Id         uint      `gorm:"primarykey" json:"id,omitempty"`
-	FromId     int64     `gorm:"index" json:"from_user_id,omitempty"`
-	ToUserId   int64     `gorm:"index" json:"to_user_id,omitempty"`
+	FromId     uint      `gorm:"index" json:"from_user_id,omitempty"`
+	ToUserId   uint      `gorm:"index" json:"to_user_id,omitempty"`
 	Content    string    `gorm:"not null" json:"content,omitempty"`
 	CreatedAt  time.Time `gorm:"not null" json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
@@ -141,20 +141,21 @@ type UserService interface {
 	ServiceBase
 	Login(user *User) error
 	Register(user *User) error
-	Info(userId uint, targetId uint, user *User) error
+	UserInfo(curentId uint, targetId uint) (User, error)
 }
 
 // UserRepository : represent the user's repository contract
 type UserRepository interface {
 	Save(user *User) error
-	FindById(userId uint, user *User, preload uint) error
-	FindByName(name string, user *User, preload uint) error
+	FindById(userId uint, user *User) error
+	FindByName(name string, user *User) error
+	FillExtraData(currentUserId uint, targetUser *User) error
 }
 
 type VideoService interface {
 	ServiceBase
 	Publish(video *Video) error
-	GetPublishList(userId uint) ([]Video, error)
+	GetPublishList(userId uint, targetId uint) ([]Video, error)
 	GetFeedList(userId uint) ([]Video, error)
 }
 
@@ -162,6 +163,7 @@ type VideoRepository interface {
 	Save(*Video) error
 	FindListByUserId(uint, *[]Video) error
 	FeedList(uint, *[]Video) error
+	FillExtraData(userId uint, video *Video) error
 }
 
 type RelationService interface {
@@ -190,6 +192,9 @@ type CommentService interface {
 }
 
 type FavoriteRepository interface {
+	GetVideoFavoriteCount(videoId uint) (res int64, err error)
+	GetUserFavoriteCount(userId uint) (res int64, err error)
+	GetUserFavoriteList(userId uint) (res []Video, err error)
 }
 
 type FavoriteService interface {

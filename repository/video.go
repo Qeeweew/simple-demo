@@ -27,3 +27,20 @@ func (v *videoRepository) FindListByUserId(userID uint, videos *[]model.Video) e
 func (v *videoRepository) FeedList(limit uint, videos *[]model.Video) error {
 	return v.Preload("Author").Limit(int(limit)).Order("created_at DESC").Find(videos).Error
 }
+
+// TODO: Fill `comment_count` `isFavorate``
+
+func (v *videoRepository) FillExtraData(userId uint, video *model.Video) (err error) {
+	return v.Transaction(func(tx *gorm.DB) (err error) {
+		err = NewUserRepository(tx).FillExtraData(userId, &video.Author)
+		if err != nil {
+			return
+		}
+		video.FavoriteCount, err = NewFavoriteRepository(tx).GetVideoFavoriteCount(video.Id)
+		if err != nil {
+			return
+		}
+
+		return
+	})
+}

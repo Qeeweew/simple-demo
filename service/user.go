@@ -32,7 +32,7 @@ func NewUser() model.UserService {
 
 func (u *userService) Login(user *model.User) error {
 	password := user.Password
-	err := u.User(context.Background()).FindByName(user.Name, user, 0)
+	err := u.User(context.Background()).FindByName(user.Name, user)
 	if err != nil {
 		return err
 	}
@@ -46,17 +46,17 @@ func (u *userService) Register(user *model.User) error {
 	return u.User(context.Background()).Save(user)
 }
 
-func (u *userService) Info(userId uint, targetId uint, user *model.User) (err error) {
-	err = u.User(context.Background()).FindById(targetId, user, 3)
-	if err != nil {
-		return
-	}
-	for _, fan := range user.Fans {
-		if fan.Id == userId {
-			user.IsFollow = true
+func (u *userService) UserInfo(currentId uint, targetId uint) (user model.User, err error) {
+	err = u.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
+		err = u.User(context.Background()).FindById(targetId, &user)
+		if err != nil {
+			return
 		}
-	}
-	user.FollowCount = len(user.Follows)
-	user.FanCount = len(user.Fans)
+		err = u.User(txctx).FillExtraData(currentId, &user)
+		if err != nil {
+			return
+		}
+		return
+	})
 	return
 }

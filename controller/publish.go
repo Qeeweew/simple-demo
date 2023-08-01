@@ -7,6 +7,7 @@ import (
 	"simple-demo/common/config"
 	"simple-demo/common/log"
 	"simple-demo/common/model"
+	"simple-demo/common/result"
 	"simple-demo/service"
 	"strconv"
 
@@ -36,13 +37,11 @@ func Publish(c *gin.Context) {
 	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
 	// 暂时放这里了
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: 1,
-			StatusMsg:  err.Error(),
-		})
+		result.Error(c, result.ServerErrorStatus)
+		log.Logger.Error("Saving video Failed", zap.String("err", err.Error()))
 		return
 	}
-	log.Logger.Info("Saving vido Succeed", zap.String("File", finalName))
+	log.Logger.Info("Saving video Succeed", zap.String("File", finalName))
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
 		StatusMsg:  finalName + " uploaded successfully",
@@ -57,7 +56,6 @@ func Publish(c *gin.Context) {
 }
 
 // PublishList all users have same publish video list
-// isFavorate 还没有处理
 func PublishList(c *gin.Context) {
 	targetId, _ := strconv.Atoi(c.Query("user_id"))
 	val, found := c.Keys["auth_id"]
@@ -67,15 +65,10 @@ func PublishList(c *gin.Context) {
 	} else {
 		userId = 0
 	}
-	videos, err := service.NewVideo().GetPublishList(userId)
+	videos, err := service.NewVideo().GetPublishList(userId, uint(targetId))
 	if err != nil {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
-		return
-	}
-	var targetUser model.User
-	err = service.NewUser().Info(userId, uint(targetId), &targetUser)
-	if err != nil {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
+		log.Logger.Error("PublishList error", zap.String("err", err.Error()))
+		result.Error(c, result.ServerErrorStatus)
 		return
 	}
 	c.JSON(http.StatusOK, VideoListResponse{
