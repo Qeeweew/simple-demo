@@ -22,7 +22,7 @@ go build -o server cmd/*
 - common 存放公共的基础模块，比如全局错误码，封装的工具（为了简化开发，将一系列逻辑封装成一个函数）
     - config 配置模块，包括配置文件读取的实现，项目以 `app.yaml` 作为配置文件
     - log 封装的日志模块，应该仅用于与业务相关的部分
-    - model 模型部分，包括数据库中的表结构、service层接口的定义、repository层接口的定义。
+    - model 模型部分，包括数据库中的表结构、service层接口的定义、repository层接口的定义
     - result 封装的返回结果模块
 - middleware 业务中间件模块，比如用户鉴权
 - controller 负责对发送的数据进行处理，调用 service 中实现的业务逻辑，并根据所调用的 service 层的函数的返回值判断并处理返回一次请求的响应信息（比如 200 OK 跟上相应的数据）
@@ -30,4 +30,4 @@ go build -o server cmd/*
 - repository 数据库CURD操作的实现，原则上一个文件对应一个数据表，如`repository/user.go`封装service层所有对user表的操作
 - doc 一些文档
 - util 封装了一些辅助实现代码逻辑而构成的小工具
-- test 业务测试模块，主要是调用调用controller层进行集成测试
+- test 业务测试模块，主要是调用controller层进行集成测试
