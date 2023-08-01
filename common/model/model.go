@@ -28,13 +28,10 @@ type User struct {
 type Video struct {
 	gorm.Model
 	UserId   uint   `gorm:"not null;index"`
+	Author   User   `gorm:"foreignKey:UserId"`
 	Title    string `gorm:"not null;index"`
 	PlayUrl  string `gorm:"not null"`
 	CoverUrl string // `gorm:"not null"`
-
-	// has many
-	Comments []Comment
-	Favors   []Favor
 
 	// gorm会忽略，用于保存结果、转换到Controlle.Video
 	FavoriteCount int  `gorm:"-:all"`
@@ -47,16 +44,16 @@ type Comment struct {
 	gorm.Model
 	Content string `gorm:"not null"`
 	UserID  uint
-
+	User    User
 	VideoID uint
 }
 
-// Favor 点赞表
-type Favor struct {
+// Favorite 点赞表
+type Favorite struct {
 	gorm.Model
-	UserID uint
-
+	UserID  uint
 	VideoID uint
+	Video   Video
 }
 
 // Message 聊天消息表
@@ -79,6 +76,8 @@ type ServiceBase interface {
 	User(ctx context.Context) UserRepository
 	Video(ctx context.Context) VideoRepository
 	Relation(ctx context.Context) RelationRepository
+	Comment(ctx context.Context) CommentRepository
+	Favorite(ctx context.Context) FavoriteRepository
 }
 
 // Service启动Transaction的接口
@@ -110,7 +109,7 @@ type VideoService interface {
 
 type VideoRepository interface {
 	Save(*Video) error
-	FindListByUserID(uint, *[]Video, uint) error
+	FindListByUserID(uint, *[]Video) error
 	FeedList(uint, *[]Video) error
 }
 
@@ -129,4 +128,24 @@ type RelationRepository interface {
 	UnFollow(userId uint, toUserId uint) error
 	FollowList(userId uint) ([]*User, error)
 	FanList(userId uint) ([]*User, error)
+}
+
+type CommentRepository interface {
+	GetVideoCommentList(videoID uint) (res []Comment, err error)
+	GetVideoCommentCount(videoID uint) (res int64, err error)
+}
+
+type CommentService interface {
+}
+
+type FavoriteRepository interface {
+}
+
+type FavoriteService interface {
+}
+
+type MessageService interface {
+}
+
+type MessageRepository interface {
 }
