@@ -92,6 +92,7 @@ func UserInfo(c *gin.Context) {
 		result.Error(c, result.ServerErrorStatus)
 		log.Logger.Error("UserInfo error", zap.String("err", err.Error()))
 	} else {
+		log.Logger.Info("???")
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User:     targetUser,

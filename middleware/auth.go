@@ -32,12 +32,15 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 		var req TokenReq
 
-		if err := c.ShouldBind(&req); err != nil {
+		if err := c.ShouldBindQuery(&req); err != nil {
 			result.Error(c, result.TokenErrorStatus)
+			c.Abort()
+			return
 		}
 		id, err := utils.ParseToken(req.Token)
 		if err != nil {
 			result.Error(c, result.TokenErrorStatus)
+			c.Abort()
 			return
 		}
 		c.Set("auth_id", id)
