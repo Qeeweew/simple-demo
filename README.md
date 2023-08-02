@@ -31,3 +31,9 @@ go build -o server cmd/*
 - doc 一些文档
 - util 封装了一些辅助实现代码逻辑而构成的小工具
 - test 业务测试模块，主要是调用controller层进行集成测试
+
+### 开发注意点
+- service层若需要执行多次sql语句，最好套一层Transaction保持一致性（即使没有多次写入）
+- token默认已经经过中间件验证，并保存用户ID在gin.Context中
+- 错误处理可以更加直接一点
+- 使用全局Logger进行日志保存
