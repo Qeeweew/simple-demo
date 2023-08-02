@@ -35,9 +35,15 @@ type UserResponse struct {
 }
 
 func Register(c *gin.Context) {
+	type Req = struct {
+		Username string `form:"username"`
+		Password string `form:"password"`
+	}
 	var user model.User
-	user.Name = c.Query("username")
-	user.Password = c.Query("password")
+	var req Req
+	c.ShouldBind(&req)
+	user.Name = req.Password
+	user.Password = req.Username
 	err := service.NewUser().Register(&user)
 	if err != nil {
 		log.Logger.Error("Register error",
