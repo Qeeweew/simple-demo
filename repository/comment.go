@@ -16,12 +16,12 @@ func NewCommentRepository(db *gorm.DB) model.CommentRepository {
 	}
 }
 
-func (c *commentRepository) GetVideoCommentList(videoID uint) (res []model.Comment, err error) {
-	err = c.Preload("User").Find(&res, "video_id = ?", videoID).Error
+func (c *commentRepository) VideoCommentList(videoID uint) (res []model.Comment, err error) {
+	err = c.Model(&model.Comment{VideoId: videoID}).Preload("User").Error
 	return
 }
 
-func (c *commentRepository) GetVideoCommentCount(videoID uint) (res int64, err error) {
-	err = c.Where("video_id = ?", videoID).Count(&res).Error
+func (c *commentRepository) VideoCommentCount(videoID uint) (res int64, err error) {
+	err = c.Model(&model.Comment{VideoId: videoID}).Count(&res).Error
 	return
 }

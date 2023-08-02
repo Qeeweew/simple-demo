@@ -9,7 +9,6 @@ import (
 	"simple-demo/common/model"
 	"simple-demo/common/result"
 	"simple-demo/service"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -53,11 +52,21 @@ func Publish(c *gin.Context) {
 	}
 	log.Logger.Info("Publish video", zap.String("video url", video.PlayUrl))
 	service.NewVideo().Publish(&video)
+	log.Logger.Info("Publish Succeed", zap.String("url", video.PlayUrl))
 }
 
 // PublishList all users have same publish video list
 func PublishList(c *gin.Context) {
-	targetId, _ := strconv.Atoi(c.Query("user_id"))
+	type Req struct {
+		UserId uint `form:"user_id"`
+	}
+	var req Req
+	if err := c.ShouldBind(&req); err != nil {
+		log.Logger.Error("check params error", zap.String("err", err.Error()))
+		result.Error(c, result.QueryParamErrorStatus)
+		return
+	}
+	targetId := req.UserId
 	val, found := c.Keys["auth_id"]
 	var userId uint
 	if found {
@@ -65,7 +74,7 @@ func PublishList(c *gin.Context) {
 	} else {
 		userId = 0
 	}
-	videos, err := service.NewVideo().GetPublishList(userId, uint(targetId))
+	videos, err := service.NewVideo().GetPublishList(userId, targetId)
 	if err != nil {
 		log.Logger.Error("PublishList error", zap.String("err", err.Error()))
 		result.Error(c, result.ServerErrorStatus)

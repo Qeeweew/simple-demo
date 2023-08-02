@@ -7,21 +7,10 @@ import (
 	"simple-demo/common/result"
 	"simple-demo/service"
 	"simple-demo/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
-
-var usersLoginInfo = map[string]User{
-	"zhangleidouyin": {
-		Id:          1,
-		Name:        "zhanglei",
-		FollowCount: 10,
-		FanCount:    5,
-		IsFollow:    true,
-	},
-}
 
 type UserLoginResponse struct {
 	Response
@@ -39,11 +28,13 @@ func Register(c *gin.Context) {
 		Username string `form:"username"`
 		Password string `form:"password"`
 	}
-	var user model.User
 	var req Req
-	c.ShouldBind(&req)
-	user.Name = req.Password
-	user.Password = req.Username
+	if err := c.ShouldBind(&req); err != nil {
+		log.Logger.Error("check params error", zap.String("err", err.Error()))
+		result.Error(c, result.QueryParamErrorStatus)
+		return
+	}
+	var user = model.User{Name: req.Username, Password: req.Password}
 	err := service.NewUser().Register(&user)
 	if err != nil {
 		log.Logger.Error("Register error",
@@ -60,9 +51,17 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	var user model.User
-	user.Name = c.Query("username")
-	user.Password = c.Query("password")
+	type Req = struct {
+		Username string `form:"username"`
+		Password string `form:"password"`
+	}
+	var req Req
+	if err := c.ShouldBind(&req); err != nil {
+		log.Logger.Error("check params error", zap.String("err", err.Error()))
+		result.Error(c, result.QueryParamErrorStatus)
+		return
+	}
+	var user = model.User{Name: req.Username, Password: req.Password}
 	err := service.NewUser().Login(&user)
 	if err != nil {
 		log.Logger.Error("Login error", zap.String("err", err.Error()))
@@ -77,7 +76,16 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	targetId, _ := strconv.Atoi(c.Query("user_id"))
+	type Req = struct {
+		UserId int `form:"user_id"`
+	}
+	var req Req
+	if err := c.ShouldBind(&req); err != nil {
+		log.Logger.Error("check params error", zap.String("err", err.Error()))
+		result.Error(c, result.QueryParamErrorStatus)
+		return
+	}
+	targetId := req.UserId
 	userId, _ := c.Keys["auth_id"].(uint)
 	targetUser, err := service.NewUser().UserInfo(userId, uint(targetId))
 	if err != nil {
