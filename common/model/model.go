@@ -196,9 +196,12 @@ type FavoriteRepository interface {
 	UserFavoriteCount(userId uint) (res int64, err error)
 	UserFavoriteList(userId uint) (res []Video, err error)
 	IsFavorite(userId uint, videoId uint) (res bool, err error)
+	Create(userId uint, videoId uint) error
+	Delete(userId uint, videoId uint) error
 }
 
 type FavoriteService interface {
+	FavoriteAction(like bool, userId uint, videoId uint) error
 }
 
 type MessageService interface {
