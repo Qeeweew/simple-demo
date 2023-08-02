@@ -68,7 +68,7 @@ func (r *relationRepository) CheckFollowRelationship(userId uint, toUserId uint)
 		return
 	}
 	var cnt int64
-	err = r.DB.Table("follow").Where("user_id = ? AND follow_id = ?", userId, toUserId).Count(&cnt).Error
+	err = r.DB.Table("follows").Where("user_id = ? AND follow_id = ?", userId, toUserId).Count(&cnt).Error
 	if err != nil {
 		return
 	}

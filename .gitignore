@@ -30,3 +30,4 @@ node_modules
 app.yaml
 logs/
 public/
+*.sql
