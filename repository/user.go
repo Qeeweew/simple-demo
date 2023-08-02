@@ -21,22 +21,33 @@ func (u *userRepository) Save(user *model.User) error {
 }
 
 func (u *userRepository) FindById(userID uint, user *model.User) error {
-	var db = u.DB
-	return db.First(user, "id = ?", userID).Error
+	return u.First(user, "id = ?", userID).Error
 }
 
 func (u *userRepository) FindByName(username string, user *model.User) error {
-	var db = u.DB
-	return db.First(user, "name = ?", username).Error
+	return u.First(user, "name = ?", username).Error
 }
 
-// TODO: 添加repository其他接口完成各个信息的查询并填充。（也可以直接在这里写）
 func (u *userRepository) FillExtraData(currentUserId uint, targetUser *model.User) error {
-	targetUser.FollowCount = 0
-	targetUser.FanCount = 0
-	targetUser.IsFollow = true
-	targetUser.TotalFavorited = 0
-	targetUser.WorkCount = 0
-	targetUser.FanCount = 0
+	u.Transaction(func(tx *gorm.DB) (err error) {
+		targetUser.FollowCount = tx.Where(&model.User{Id: targetUser.Id}).Association("Follows").Count()
+		targetUser.FanCount = tx.Where(&model.User{Id: targetUser.Id}).Association("Fans").Count()
+		targetUser.IsFollow, err = NewRelationRepository(tx).CheckFollowRelationship(currentUserId, targetUser.Id)
+		if err != nil {
+			return
+		}
+		targetUser.FavoriteCount, err = NewFavoriteRepository(tx).UserFavoriteCount(targetUser.Id)
+		if err != nil {
+			return
+		}
+		// TODO: Replace with ORM operation
+		err = tx.Where(&model.Video{AuthorId: targetUser.Id}).Count(&targetUser.WorkCount).Error
+		if err != nil {
+			return
+		}
+		err = tx.Raw("SELECT COUNT(*) FROM user INNER JOIN video ON user.id = video.author_id INNER JOIN favorite ON video.id = favorite.video_id WHERE user.id = ?", targetUser.Id).
+			Scan(&targetUser.TotalFavorited).Error
+		return
+	})
 	return nil
 }

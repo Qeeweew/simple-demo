@@ -33,17 +33,35 @@ func (v *videoService) Publish(video *model.Video) error {
 }
 
 func (v *videoService) GetPublishList(userId uint, targetId uint) (videos []model.Video, err error) {
-	err = v.tximpl.Transaction(context.Background(), func(txctx context.Context) error {
+	err = v.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
 		err = v.Video(txctx).FindListByUserId(targetId, &videos)
-		for i := range videos {
-			v.Video(txctx).FillExtraData(userId, &videos[i])
+		if err != nil {
+			return
 		}
-		return nil
+		for i := range videos {
+			err = v.Video(txctx).FillExtraData(userId, &videos[i])
+			if err != nil {
+				return
+			}
+		}
+		return
 	})
 	return
 }
 
 func (v *videoService) GetFeedList(limit uint) (videos []model.Video, err error) {
-	err = v.Video(context.Background()).FeedList(limit, &videos)
+	err = v.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
+		err = v.Video(txctx).FeedList(limit, &videos)
+		if err != nil {
+			return
+		}
+		for i := range videos {
+			err = v.Video(txctx).FillExtraData(0, &videos[i])
+			if err != nil {
+				return
+			}
+		}
+		return
+	})
 	return
 }

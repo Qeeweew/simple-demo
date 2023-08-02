@@ -27,13 +27,15 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		if matches, _ := path.Match("/videos/*", c.FullPath()); matches {
 			return
 		}
-
-		tokenString := c.Query("token")
-		if tokenString == "" {
-			tokenString = c.PostForm("token")
+		type TokenReq struct {
+			Token string `form:"token"`
 		}
-		// empty string also fails
-		id, err := utils.ParseToken(tokenString)
+		var req TokenReq
+
+		if err := c.ShouldBind(&req); err != nil {
+			result.Error(c, result.TokenErrorStatus)
+		}
+		id, err := utils.ParseToken(req.Token)
 		if err != nil {
 			result.Error(c, result.TokenErrorStatus)
 			return

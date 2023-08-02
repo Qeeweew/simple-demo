@@ -16,16 +16,26 @@ func NewFavoriteRepository(db *gorm.DB) model.FavoriteRepository {
 	}
 }
 
-func (f *favoriteRepository) GetUserFavoriteCount(userId uint) (res int64, err error) {
-	err = f.Where("user_id = ?", userId).Count(&res).Error
+func (f *favoriteRepository) UserFavoriteCount(userId uint) (res int64, err error) {
+	err = f.Model(&model.Favorite{UserId: userId}).Count(&res).Error
 	return
 }
-func (f *favoriteRepository) GetVideoFavoriteCount(video_id uint) (res int64, err error) {
-	err = f.Where("video_id = ?", video_id).Count(&res).Error
+func (f *favoriteRepository) VideoFavoriteCount(video_id uint) (res int64, err error) {
+	err = f.Model(&model.Favorite{VideoId: video_id}).Count(&res).Error
 	return
 }
 
-func (f *favoriteRepository) GetUserFavoriteList(userId uint) (res []model.Video, err error) {
-	err = f.Preload("Video").Preload("Video.Author").Where("user_id = ?", userId).Find(&res).Error
+func (f *favoriteRepository) UserFavoriteList(userId uint) (res []model.Video, err error) {
+	err = f.Model(&model.Favorite{UserId: userId}).Preload("Video").Preload("Video.Author").Find(&res).Error
+	return
+}
+
+func (f *favoriteRepository) IsFavorite(userId uint, videoId uint) (res bool, err error) {
+	var cnt int64
+	err = f.Model(&model.Favorite{UserId: userId, VideoId: videoId}).Count(&cnt).Error
+	if err != nil {
+		return
+	}
+	res = cnt > 0
 	return
 }

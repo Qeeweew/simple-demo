@@ -184,17 +184,18 @@ type RelationRepository interface {
 }
 
 type CommentRepository interface {
-	GetVideoCommentList(videoId uint) (res []Comment, err error)
-	GetVideoCommentCount(videoId uint) (res int64, err error)
+	VideoCommentList(videoId uint) (res []Comment, err error)
+	VideoCommentCount(videoId uint) (res int64, err error)
 }
 
 type CommentService interface {
 }
 
 type FavoriteRepository interface {
-	GetVideoFavoriteCount(videoId uint) (res int64, err error)
-	GetUserFavoriteCount(userId uint) (res int64, err error)
-	GetUserFavoriteList(userId uint) (res []Video, err error)
+	VideoFavoriteCount(videoId uint) (res int64, err error)
+	UserFavoriteCount(userId uint) (res int64, err error)
+	UserFavoriteList(userId uint) (res []Video, err error)
+	IsFavorite(userId uint, videoId uint) (res bool, err error)
 }
 
 type FavoriteService interface {

@@ -20,15 +20,37 @@ func (v *videoRepository) Save(video *model.Video) error {
 	return v.Create(video).Error
 }
 
-func (v *videoRepository) FindListByUserId(userID uint, videos *[]model.Video) error {
-	return v.Preload("Author").Find(videos, "user_id = ?", userID).Error
+func (v *videoRepository) FindListByUserId(userId uint, videos *[]model.Video) error {
+	return v.Transaction(func(tx *gorm.DB) (err error) {
+		err = v.Model(model.Video{AuthorId: userId}).Find(videos).Error
+		if err != nil {
+			return
+		}
+		for i := range *videos {
+			err = NewVideoRepository(tx).FillExtraData(userId, &(*videos)[i])
+			if err != nil {
+				return
+			}
+		}
+		return
+	})
 }
 
 func (v *videoRepository) FeedList(limit uint, videos *[]model.Video) error {
-	return v.Preload("Author").Limit(int(limit)).Order("created_at DESC").Find(videos).Error
+	return v.Transaction(func(tx *gorm.DB) (err error) {
+		err = v.Preload("Author").Limit(int(limit)).Order("created_at DESC").Find(videos).Error
+		if err != nil {
+			return
+		}
+		for i := range *videos {
+			err = NewVideoRepository(tx).FillExtraData(0, &(*videos)[i])
+			if err != nil {
+				return
+			}
+		}
+		return
+	})
 }
-
-// TODO: Fill `comment_count` `isFavorate``
 
 func (v *videoRepository) FillExtraData(userId uint, video *model.Video) (err error) {
 	return v.Transaction(func(tx *gorm.DB) (err error) {
@@ -36,11 +58,17 @@ func (v *videoRepository) FillExtraData(userId uint, video *model.Video) (err er
 		if err != nil {
 			return
 		}
-		video.FavoriteCount, err = NewFavoriteRepository(tx).GetVideoFavoriteCount(video.Id)
+		video.FavoriteCount, err = NewFavoriteRepository(tx).VideoFavoriteCount(video.Id)
 		if err != nil {
 			return
 		}
-
+		video.CommentCount, err = NewCommentRepository(tx).VideoCommentCount(video.Id)
+		if err != nil {
+			return
+		}
+		if userId != 0 {
+			video.IsFavorite, err = NewFavoriteRepository(tx).IsFavorite(userId, video.Id)
+		}
 		return
 	})
 }
