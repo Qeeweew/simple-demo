@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"path/filepath"
 	"simple-demo/common/config"
+	"simple-demo/common/log"
 	"simple-demo/common/model"
+	"simple-demo/common/result"
 	"simple-demo/service"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 type VideoListResponse struct {
@@ -20,7 +22,7 @@ type VideoListResponse struct {
 
 // Publish save upload file to public directory
 func Publish(c *gin.Context) {
-	userID := c.Keys["auth_id"].(uint)
+	userId := c.Keys["auth_id"].(uint)
 	title := c.PostForm("title")
 	data, err := c.FormFile("data")
 	if err != nil {
@@ -31,57 +33,46 @@ func Publish(c *gin.Context) {
 		return
 	}
 	filename := filepath.Base(data.Filename)
-	finalName := fmt.Sprintf("%d-%s", userID, filename)
+	finalName := fmt.Sprintf("%d-%s", userId, filename)
 	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
-	logrus.Println("save file: ", saveFile)
+	// 暂时放这里了
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
-		c.JSON(http.StatusOK, Response{
-			StatusCode: 1,
-			StatusMsg:  err.Error(),
-		})
+		result.Error(c, result.ServerErrorStatus)
+		log.Logger.Error("Saving video Failed", zap.String("err", err.Error()))
 		return
 	}
+	log.Logger.Info("Saving video Succeed", zap.String("File", finalName))
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
 		StatusMsg:  finalName + " uploaded successfully",
 	})
 	var video = model.Video{
-		UserId:  userID,
-		Title:   title,
-		PlayUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
+		AuthorId: userId,
+		Title:    title,
+		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
 	}
-	logrus.Println("video url: ", video.PlayUrl)
+	log.Logger.Info("Publish video", zap.String("video url", video.PlayUrl))
 	service.NewVideo().Publish(&video)
 }
 
 // PublishList all users have same publish video list
-// isFavorate 还没有处理
 func PublishList(c *gin.Context) {
-	targetID, _ := strconv.Atoi(c.Query("user_id"))
+	targetId, _ := strconv.Atoi(c.Query("user_id"))
 	val, found := c.Keys["auth_id"]
-	var userID uint
+	var userId uint
 	if found {
-		userID = val.(uint)
+		userId = val.(uint)
 	} else {
-		userID = 0
+		userId = 0
 	}
-	videos, err := service.NewVideo().GetPublishList(userID)
+	videos, err := service.NewVideo().GetPublishList(userId, uint(targetId))
 	if err != nil {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
+		log.Logger.Error("PublishList error", zap.String("err", err.Error()))
+		result.Error(c, result.ServerErrorStatus)
 		return
-	}
-	var targetUser model.User
-	err = service.NewUser().Info(userID, uint(targetID), &targetUser)
-	if err != nil {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
-		return
-	}
-	var ctlVideos []Video
-	for _, video := range videos {
-		ctlVideos = append(ctlVideos, FromVideoModel(&video))
 	}
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response:  Response{StatusCode: 0},
-		VideoList: ctlVideos,
+		VideoList: videos,
 	})
 }

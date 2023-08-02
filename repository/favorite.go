@@ -16,12 +16,16 @@ func NewFavoriteRepository(db *gorm.DB) model.FavoriteRepository {
 	}
 }
 
-func (f *favoriteRepository) GetUserFavoriteCount(userID uint) (res int64, err error) {
-	err = f.Where("user_id = ?", userID).Count(&res).Error
+func (f *favoriteRepository) GetUserFavoriteCount(userId uint) (res int64, err error) {
+	err = f.Where("user_id = ?", userId).Count(&res).Error
+	return
+}
+func (f *favoriteRepository) GetVideoFavoriteCount(video_id uint) (res int64, err error) {
+	err = f.Where("video_id = ?", video_id).Count(&res).Error
 	return
 }
 
-func (f *favoriteRepository) GetUserFavoriteList(userID uint) (res []model.Video, err error) {
-	err = f.Preload("Video").Preload("Video.Author").Where("user_id = ?", userID).Find(&res).Error
+func (f *favoriteRepository) GetUserFavoriteList(userId uint) (res []model.Video, err error) {
+	err = f.Preload("Video").Preload("Video.Author").Where("user_id = ?", userId).Find(&res).Error
 	return
 }

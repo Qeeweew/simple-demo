@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"net/http"
 	"path"
-	"simple-demo/controller"
+	"simple-demo/common/result"
 	"simple-demo/utils"
 
 	"github.com/gin-gonic/gin"
@@ -30,22 +29,13 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := c.Query("token")
-		if c.FullPath() == "/douyin/publish/action/" {
+		if tokenString == "" {
 			tokenString = c.PostForm("token")
 		}
-		if tokenString == "" {
-			c.JSON(http.StatusOK, controller.Response{
-				StatusCode: 1,
-				StatusMsg:  "missing token",
-			})
-			return
-		}
+		// empty string also fails
 		id, err := utils.ParseToken(tokenString)
 		if err != nil {
-			c.JSON(http.StatusOK, controller.Response{
-				StatusCode: 1,
-				StatusMsg:  "invalid token",
-			})
+			result.Error(c, result.TokenErrorStatus)
 			return
 		}
 		c.Set("auth_id", id)

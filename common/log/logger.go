@@ -1,13 +1,14 @@
 package log
 
 import (
-	"github.com/natefinch/lumberjack"
-	"github.com/sirupsen/logrus"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"fmt"
 	"os"
 	"simple-demo/common/config"
 	"time"
+
+	"github.com/natefinch/lumberjack"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Logger 整个项目的Logger
@@ -79,7 +80,7 @@ func getLogWriter(fileName string) zapcore.WriteSyncer {
 	if !pathExists(dir) {
 		err := os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
-			logrus.Warnf("create dir %s failed", dir)
+			panic(fmt.Sprintf("create dir %s failed", dir))
 		}
 	}
 	lumberJackLogger := &lumberjack.Logger{

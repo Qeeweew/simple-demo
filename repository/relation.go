@@ -69,7 +69,7 @@ func (r *relationRepository) CheckFollowRelationship(userId uint, toUserId uint)
 	}
 
 	for _, follow := range user.Follows {
-		if follow.ID == toUserId {
+		if follow.Id == toUserId {
 			return true, nil
 		}
 	}

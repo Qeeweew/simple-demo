@@ -2,21 +2,24 @@ package controller
 
 import (
 	"net/http"
+	"simple-demo/common/log"
 	"simple-demo/common/model"
+	"simple-demo/common/result"
 	"simple-demo/service"
 	"simple-demo/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 var usersLoginInfo = map[string]User{
 	"zhangleidouyin": {
-		Id:            1,
-		Name:          "zhanglei",
-		FollowCount:   10,
-		FollowerCount: 5,
-		IsFollow:      true,
+		Id:          1,
+		Name:        "zhanglei",
+		FollowCount: 10,
+		FanCount:    5,
+		IsFollow:    true,
 	},
 }
 
@@ -32,19 +35,26 @@ type UserResponse struct {
 }
 
 func Register(c *gin.Context) {
+	type Req = struct {
+		Username string `form:"username"`
+		Password string `form:"password"`
+	}
 	var user model.User
-	user.Name = c.Query("username")
-	user.Password = c.Query("password")
+	var req Req
+	c.ShouldBind(&req)
+	user.Name = req.Password
+	user.Password = req.Username
 	err := service.NewUser().Register(&user)
 	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
+		log.Logger.Error("Register error",
+			zap.String("username", user.Name), zap.String("password", user.Password),
+			zap.String("err", err.Error()))
+		result.Error(c, result.ServerErrorStatus)
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
-			UserId:   int64(user.ID),
-			Token:    utils.CreateToken(user.ID),
+			UserId:   int64(user.Id),
+			Token:    utils.CreateToken(user.Id),
 		})
 	}
 }
@@ -55,31 +65,28 @@ func Login(c *gin.Context) {
 	user.Password = c.Query("password")
 	err := service.NewUser().Login(&user)
 	if err != nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
+		log.Logger.Error("Login error", zap.String("err", err.Error()))
+		result.Error(c, result.LoginErrorStatus)
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
-			UserId:   int64(user.ID),
-			Token:    utils.CreateToken(user.ID),
+			UserId:   int64(user.Id),
+			Token:    utils.CreateToken(user.Id),
 		})
 	}
 }
 
 func UserInfo(c *gin.Context) {
-	targetID, _ := strconv.Atoi(c.Query("user_id"))
-	userID, _ := c.Keys["auth_id"].(uint)
-	var targetUser model.User
-	err := service.NewUser().Info(userID, uint(targetID), &targetUser)
+	targetId, _ := strconv.Atoi(c.Query("user_id"))
+	userId, _ := c.Keys["auth_id"].(uint)
+	targetUser, err := service.NewUser().UserInfo(userId, uint(targetId))
 	if err != nil {
-		c.JSON(http.StatusOK, UserResponse{
-			Response: Response{StatusCode: 1, StatusMsg: err.Error()},
-		})
+		result.Error(c, result.ServerErrorStatus)
+		log.Logger.Error("UserInfo error", zap.String("err", err.Error()))
 	} else {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
-			User:     FromUserModel(&targetUser),
+			User:     targetUser,
 		})
 	}
 }
