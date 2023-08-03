@@ -47,7 +47,7 @@ func CommentAction(c *gin.Context) {
 	// TODO: move some code to Service layer
 	switch req.ActionType {
 	case 1:
-		var comment = model.Comment{UserId: c.Keys["auth_id"].(uint), VideoId: req.VideoId}
+		var comment = model.Comment{UserId: c.Keys["auth_id"].(uint), VideoId: req.VideoId, Content: req.CommentText}
 		err := service.NewComment().CommentAction(true, &comment)
 		if err != nil {
 			result.Error(c, result.ServerErrorStatus)
