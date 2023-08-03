@@ -22,13 +22,17 @@ type UserResponse struct {
 	Response
 	User User `json:"user"`
 }
+type LoginRequest = struct {
+	Username string `form:"username" binding:"required"`
+	Password string `form:"password" binding:"required"`
+}
+
+type UserInfoRequest = struct {
+	UserId int `form:"user_id" binding:"required"`
+}
 
 func Register(c *gin.Context) {
-	type Req = struct {
-		Username string `form:"username"`
-		Password string `form:"password"`
-	}
-	var req Req
+	var req LoginRequest
 	if err := c.ShouldBind(&req); err != nil {
 		log.Logger.Error("check params error", zap.String("err", err.Error()))
 		result.Error(c, result.QueryParamErrorStatus)
@@ -51,11 +55,7 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	type Req = struct {
-		Username string `form:"username"`
-		Password string `form:"password"`
-	}
-	var req Req
+	var req LoginRequest
 	if err := c.ShouldBind(&req); err != nil {
 		log.Logger.Error("check params error", zap.String("err", err.Error()))
 		result.Error(c, result.QueryParamErrorStatus)
@@ -76,10 +76,7 @@ func Login(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	type Req = struct {
-		UserId int `form:"user_id"`
-	}
-	var req Req
+	var req UserInfoRequest
 	if err := c.ShouldBind(&req); err != nil {
 		log.Logger.Error("check params error", zap.String("err", err.Error()))
 		result.Error(c, result.QueryParamErrorStatus)
@@ -92,7 +89,6 @@ func UserInfo(c *gin.Context) {
 		result.Error(c, result.ServerErrorStatus)
 		log.Logger.Error("UserInfo error", zap.String("err", err.Error()))
 	} else {
-		log.Logger.Info("???")
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User:     targetUser,
