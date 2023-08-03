@@ -18,8 +18,15 @@ func NewCommentRepository(db *gorm.DB) model.CommentRepository {
 	}
 }
 
-func (c *commentRepository) VideoCommentList(videoId uint) (res []model.Comment, err error) {
-	err = c.Order("created_at DESC").Where("video_id = ?", videoId).Preload("User").Find(&res).Error
+func (c *commentRepository) VideoCommentList(videoId uint) (comments []model.Comment, err error) {
+	err = c.Order("created_at DESC").Where("video_id = ?", videoId).Preload("User").Find(&comments).Error
+	if err != nil {
+		return
+	}
+	for i := range comments {
+		_, mon, day := comments[i].CreatedAt.UTC().Date()
+		comments[i].CreateDate = fmt.Sprintf("%02d:%02d", mon, day)
+	}
 	return
 }
 
