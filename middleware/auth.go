@@ -29,12 +29,12 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		type TokenReq struct {
-			Token string `form:"token"`
+			Token string `form:"token" binding:"required"`
 		}
 		var req TokenReq
 
-		if err := c.ShouldBindQuery(&req); err != nil {
-			result.Error(c, result.TokenErrorStatus)
+		if err := c.ShouldBind(&req); err != nil {
+			result.Error(c, result.MissingToken)
 			c.Abort()
 			return
 		}
