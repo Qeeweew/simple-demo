@@ -2,6 +2,8 @@ package controller
 
 import (
 	"net/http"
+	"simple-demo/common/log"
+	"simple-demo/common/result"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,10 +18,21 @@ type CommentActionResponse struct {
 	Comment Comment `json:"comment,omitempty"`
 }
 
+type CommentActionRequest struct {
+	VideoId     uint
+	ActionType  int
+	CommentText string
+	CommentId   string
+}
+
 // CommentAction no practical effect, just check if token is valid
 func CommentAction(c *gin.Context) {
-	// token := c.Query("token")
-	// actionType := c.Query("action_type")
+	var req CommentActionRequest
+	if err := c.ShouldBind(&req); err != nil {
+		result.Error(c, result.QueryParamErrorStatus)
+	}
+
+	log.Logger.Sugar().Info("%v", req)
 
 	// if user, exist := usersLoginInfo[token]; exist {
 	// 	if actionType == "1" {
