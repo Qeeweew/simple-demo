@@ -19,7 +19,7 @@ func NewCommentRepository(db *gorm.DB) model.CommentRepository {
 }
 
 func (c *commentRepository) VideoCommentList(videoId uint) (res []model.Comment, err error) {
-	err = c.Order("create_at DESC").Where("video_id = ?", videoId).Preload("User").Find(&res).Error
+	err = c.Order("created_at DESC").Where("video_id = ?", videoId).Preload("User").Find(&res).Error
 	return
 }
 
