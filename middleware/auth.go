@@ -25,6 +25,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			}
 		}
 		if matches, _ := path.Match("/videos/*", c.FullPath()); matches {
+			c.Next()
 			return
 		}
 		type TokenReq struct {
