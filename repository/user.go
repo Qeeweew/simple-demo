@@ -40,11 +40,11 @@ func (u *userRepository) FillExtraData(currentUserId uint, targetUser *model.Use
 		if err != nil {
 			return
 		}
-		// TODO: Replace with ORM operation
-		err = tx.Where(&model.Video{AuthorId: targetUser.Id}).Count(&targetUser.WorkCount).Error
+		err = tx.Model(&model.Video{}).Where(&model.Video{AuthorId: targetUser.Id}).Count(&targetUser.WorkCount).Error
 		if err != nil {
 			return
 		}
+		// TODO: Replace with ORM operation
 		err = tx.Raw("SELECT COUNT(*) FROM user INNER JOIN video ON user.id = video.author_id INNER JOIN favorite ON video.id = favorite.video_id WHERE user.id = ?", targetUser.Id).
 			Scan(&targetUser.TotalFavorited).Error
 		return

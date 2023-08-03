@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
 	"simple-demo/common/model"
 
 	"gorm.io/gorm"
@@ -16,12 +18,39 @@ func NewCommentRepository(db *gorm.DB) model.CommentRepository {
 	}
 }
 
-func (c *commentRepository) VideoCommentList(videoID uint) (res []model.Comment, err error) {
-	err = c.Model(&model.Comment{VideoId: videoID}).Preload("User").Error
+func (c *commentRepository) VideoCommentList(videoId uint) (comments []model.Comment, err error) {
+	err = c.Order("created_at DESC").Where("video_id = ?", videoId).Preload("User").Find(&comments).Error
+	if err != nil {
+		return
+	}
+	for i := range comments {
+		_, mon, day := comments[i].CreatedAt.UTC().Date()
+		comments[i].CreateDate = fmt.Sprintf("%02d:%02d", mon, day)
+	}
 	return
 }
 
-func (c *commentRepository) VideoCommentCount(videoID uint) (res int64, err error) {
-	err = c.Model(&model.Comment{VideoId: videoID}).Count(&res).Error
+func (c *commentRepository) VideoCommentCount(videoId uint) (res int64, err error) {
+	err = c.Model(&model.Comment{}).Where("video_id = ?", videoId).Count(&res).Error
 	return
+}
+
+func (c *commentRepository) Create(comment *model.Comment) error {
+	err := c.DB.Create(comment).Error
+	if err != nil {
+		return err
+	}
+	_, mon, day := comment.CreatedAt.UTC().Date()
+	comment.CreateDate = fmt.Sprintf("%02d:%02d", mon, day)
+	return nil
+}
+
+func (c *commentRepository) Delete(comment *model.Comment) error {
+	return c.Transaction(
+		func(tx *gorm.DB) error {
+			if err := tx.First(&comment).Error; err != nil {
+				return errors.New("Record Not Found")
+			}
+			return tx.Delete(comment).Error
+		})
 }

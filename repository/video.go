@@ -22,16 +22,7 @@ func (v *videoRepository) Save(video *model.Video) error {
 
 func (v *videoRepository) FindListByUserId(userId uint, videos *[]model.Video) error {
 	return v.Transaction(func(tx *gorm.DB) (err error) {
-		err = v.Model(model.Video{AuthorId: userId}).Find(videos).Error
-		if err != nil {
-			return
-		}
-		for i := range *videos {
-			err = NewVideoRepository(tx).FillExtraData(userId, &(*videos)[i])
-			if err != nil {
-				return
-			}
-		}
+		err = v.Preload("Author").Where(model.Video{AuthorId: userId}).Find(videos).Error
 		return
 	})
 }
@@ -39,15 +30,6 @@ func (v *videoRepository) FindListByUserId(userId uint, videos *[]model.Video) e
 func (v *videoRepository) FeedList(limit uint, videos *[]model.Video) error {
 	return v.Transaction(func(tx *gorm.DB) (err error) {
 		err = v.Preload("Author").Limit(int(limit)).Order("created_at DESC").Find(videos).Error
-		if err != nil {
-			return
-		}
-		for i := range *videos {
-			err = NewVideoRepository(tx).FillExtraData(0, &(*videos)[i])
-			if err != nil {
-				return
-			}
-		}
 		return
 	})
 }

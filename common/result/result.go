@@ -1,8 +1,9 @@
 package result
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -25,6 +26,7 @@ var (
 	FavoriteErrorStatus     = newStatus(40013, "点赞失败")
 	FollowListErrorStatus   = newStatus(40014, "获取关注列表时发生了错误")
 	FollowerListErrorStatus = newStatus(40015, "获取粉丝列表时发生了错误")
+	MissingToken            = newStatus(40016, "缺失Token")
 
 	// 401 WITHOUT PERMISSION
 	NoLoginErrorStatus = newStatus(40101, "用户未登录")

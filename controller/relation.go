@@ -31,7 +31,7 @@ func RelationAction(c *gin.Context) {
 		return
 	}
 
-	if req.Token == "" || req.ToUserId <= 0 || req.ActionType > 2 || req.ActionType < 1 {
+	if req.ActionType > 2 || req.ActionType < 1 {
 		log.Logger.Error("operation illegal")
 		result.Error(c, result.QueryParamErrorStatus)
 		return
@@ -70,12 +70,6 @@ func FollowList(c *gin.Context) {
 		return
 	}
 
-	if req.UserId <= 0 || req.Token == "" {
-		log.Logger.Error("check params error")
-		result.Error(c, result.QueryParamErrorStatus)
-		return
-	}
-
 	// 获取关注列表
 	followList, err := service.NewRelation().FollowList(req.Token, req.UserId)
 	if err != nil {
@@ -99,12 +93,6 @@ func FollowerList(c *gin.Context) {
 	// 参数校验
 	err := c.ShouldBind(&req)
 	if err != nil {
-		log.Logger.Error("check params error")
-		result.Error(c, result.QueryParamErrorStatus)
-		return
-	}
-
-	if req.UserId <= 0 || req.Token == "" {
 		log.Logger.Error("check params error")
 		result.Error(c, result.QueryParamErrorStatus)
 		return

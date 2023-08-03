@@ -25,19 +25,23 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			}
 		}
 		if matches, _ := path.Match("/videos/*", c.FullPath()); matches {
+			c.Next()
 			return
 		}
 		type TokenReq struct {
-			Token string `form:"token"`
+			Token string `form:"token" binding:"required"`
 		}
 		var req TokenReq
 
 		if err := c.ShouldBind(&req); err != nil {
-			result.Error(c, result.TokenErrorStatus)
+			result.Error(c, result.MissingToken)
+			c.Abort()
+			return
 		}
 		id, err := utils.ParseToken(req.Token)
 		if err != nil {
 			result.Error(c, result.TokenErrorStatus)
+			c.Abort()
 			return
 		}
 		c.Set("auth_id", id)

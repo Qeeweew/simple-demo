@@ -186,9 +186,13 @@ type RelationRepository interface {
 type CommentRepository interface {
 	VideoCommentList(videoId uint) (res []Comment, err error)
 	VideoCommentCount(videoId uint) (res int64, err error)
+	Create(*Comment) error
+	Delete(*Comment) error
 }
 
 type CommentService interface {
+	CommentAction(isComment bool, comment *Comment) error
+	CommentList(userId uint, videoId uint) ([]Comment, error)
 }
 
 type FavoriteRepository interface {
@@ -196,9 +200,12 @@ type FavoriteRepository interface {
 	UserFavoriteCount(userId uint) (res int64, err error)
 	UserFavoriteList(userId uint) (res []Video, err error)
 	IsFavorite(userId uint, videoId uint) (res bool, err error)
+	Create(userId uint, videoId uint) error
+	Delete(userId uint, videoId uint) error
 }
 
 type FavoriteService interface {
+	FavoriteAction(isFavorite bool, userId uint, videoId uint) error
 }
 
 type MessageService interface {
