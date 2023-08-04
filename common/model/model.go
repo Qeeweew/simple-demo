@@ -19,15 +19,12 @@ type User struct {
 	Signature       string `json:"signature,omitempty"`
 
 	// 不直接储存，需要查询得到
-	Extra *UserExtra `gorm:"-:all"`
-}
-type UserExtra struct {
-	FollowCount    int64 `json:"follow_count,omitempty"`
-	FanCount       int64 `json:"follower_count,omitempty"`
-	IsFollow       bool  `json:"is_follow,omitempty"`
-	TotalFavorited int64 `json:"total_favorited,omitempty"`
-	WorkCount      int64 `json:"work_count,omitempty"`
-	FavoriteCount  int64 `json:"favorite_count,omitempty"`
+	FollowCount    int64 `gorm:"-:all" json:"follow_count,omitempty"`
+	FanCount       int64 `gorm:"-:all" json:"follower_count,omitempty"`
+	IsFollow       bool  `gorm:"-:all" json:"is_follow,omitempty"`
+	TotalFavorited int64 `gorm:"-:all" json:"total_favorited,omitempty"`
+	WorkCount      int64 `gorm:"-:all" json:"work_count,omitempty"`
+	FavoriteCount  int64 `gorm:"-:all" json:"favorite_count,omitempty"`
 }
 
 // Video 视频表
@@ -42,12 +39,9 @@ type Video struct {
 	CoverUrl  string    `gorm:"not null" json:"cover_url,omitempty"`
 
 	// 不直接储存，需要后续查询得到
-	Extra *VideoExtra `gorm:"-:all"`
-}
-type VideoExtra struct {
-	FavoriteCount int64 `json:"favorite_count,omitempty"`
-	CommentCount  int64 `json:"comment_count,omitempty"`
-	IsFavorite    bool  `json:"is_favorite,omitempty"`
+	FavoriteCount int64 `gorm:"-:all" json:"favorite_count,omitempty"`
+	CommentCount  int64 `gorm:"-:all" json:"comment_count,omitempty"`
+	IsFavorite    bool  `gorm:"-:all" json:"is_favorite,omitempty"`
 }
 
 // Comment 评论表
