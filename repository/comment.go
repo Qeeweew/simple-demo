@@ -23,10 +23,6 @@ func (c *commentRepository) VideoCommentList(videoId uint) (comments []model.Com
 	if err != nil {
 		return
 	}
-	for i := range comments {
-		_, mon, day := comments[i].CreatedAt.UTC().Date()
-		comments[i].CreateDate = fmt.Sprintf("%02d:%02d", mon, day)
-	}
 	return
 }
 

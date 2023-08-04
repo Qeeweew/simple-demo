@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"net/http"
 	"simple-demo/common/log"
 	"simple-demo/common/result"
 	"simple-demo/service"
@@ -11,13 +10,18 @@ import (
 )
 
 // FavoriteAction no practical effect, just check if token is valid
+type FavoriteActionRequest struct {
+	VideoId    uint  `form:"video_id" binding:"required"`
+	ActionType int32 `form:"action_type" binding:"required"`
+}
+
+type FavoriteListRequest struct {
+	UserId uint `form:"user_id" binding:"required"`
+}
+
 func FavoriteAction(c *gin.Context) {
-	type Req struct {
-		VideoId    int64 `form:"video_id"`
-		ActionType int32 `form:"action_type"`
-	}
 	var UserId = c.Keys["auth_id"].(uint)
-	var req Req
+	var req FavoriteActionRequest
 	if err := c.ShouldBind(&req); err != nil {
 		log.Logger.Error("check params error", zap.String("err", err.Error()))
 		result.Error(c, result.QueryParamErrorStatus)
@@ -27,7 +31,7 @@ func FavoriteAction(c *gin.Context) {
 		log.Logger.Error("action type error")
 		result.Error(c, result.QueryParamErrorStatus)
 	}
-	if err := service.NewFavorite().FavoriteAction(req.ActionType == 1, UserId, uint(req.VideoId)); err != nil {
+	if err := service.NewFavorite().FavoriteAction(req.ActionType == 1, UserId, req.VideoId); err != nil {
 		result.Error(c, result.FavoriteErrorStatus)
 	}
 	result.SuccessBasic(c)
@@ -36,10 +40,18 @@ func FavoriteAction(c *gin.Context) {
 
 // FavoriteList all users have same favorite video list
 func FavoriteList(c *gin.Context) {
-	c.JSON(http.StatusOK, VideoListResponse{
-		Response: Response{
-			StatusCode: 0,
-		},
-		VideoList: DemoVideos,
+	var UserId = c.Keys["auth_id"].(uint)
+	var req FavoriteListRequest
+	if err := c.ShouldBind(&req); err != nil {
+		log.Logger.Error("check params error", zap.String("err", err.Error()))
+		result.Error(c, result.QueryParamErrorStatus)
+		return
+	}
+	videos, err := service.NewFavorite().FavoriteList(UserId, req.UserId)
+	if err != nil {
+		result.Error(c, result.FavoriteErrorStatus)
+	}
+	result.Success(c, result.R{
+		"video_list": videos,
 	})
 }
