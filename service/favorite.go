@@ -37,14 +37,14 @@ func (f *favoriteService) FavoriteAction(isFavorite bool, userId uint, videoId u
 	}
 }
 
-func (f *favoriteService) FavoriteList(userId uint) (videos []model.Video, err error) {
+func (f *favoriteService) FavoriteList(currentId uint, targetId uint) (videos []model.Video, err error) {
 	f.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
-		videos, err = f.Favorite(txctx).UserFavoriteList(userId)
+		videos, err = f.Favorite(txctx).UserFavoriteList(targetId)
 		if err != nil {
 			return
 		}
 		for i := range videos {
-			err = f.Video(txctx).FillExtraData(userId, &videos[i])
+			err = f.Video(txctx).FillExtraData(currentId, &videos[i])
 			if err != nil {
 				return
 			}
