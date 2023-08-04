@@ -26,7 +26,11 @@ func (f *favoriteRepository) VideoFavoriteCount(video_id uint) (res int64, err e
 }
 
 func (f *favoriteRepository) UserFavoriteList(userId uint) (res []model.Video, err error) {
-	err = f.Model(&model.Favorite{}).Where(&model.Favorite{UserId: userId}).Preload("Video").Preload("Video.Author").Find(&res).Error
+	var favorites []model.Favorite
+	err = f.Model(&model.Favorite{}).Where(&model.Favorite{UserId: userId}).Preload("Video").Preload("Video.Author").Find(&favorites).Error
+	for i := range favorites {
+		res = append(res, favorites[i].Video)
+	}
 	return
 }
 

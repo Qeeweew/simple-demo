@@ -20,7 +20,7 @@ var (
 
 // NewService: construction function, injected by user repository
 func NewComment() model.CommentService {
-	userOnce.Do(func() {
+	commentOnce.Do(func() {
 		commentInstance = &commentService{
 			repository.NewTableVistor(),
 			dbcore.NewTxImpl(),

@@ -32,6 +32,9 @@ func NewUser() model.UserService {
 
 func (u *userService) Login(user *model.User) error {
 	password := user.Password
+	if u == nil {
+		panic("???")
+	}
 	err := u.User(context.Background()).FindByName(user.Name, user)
 	if err != nil {
 		return err
