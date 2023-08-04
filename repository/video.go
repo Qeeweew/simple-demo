@@ -40,16 +40,26 @@ func (v *videoRepository) FillExtraData(userId uint, video *model.Video) (err er
 		if err != nil {
 			return
 		}
-		video.FavoriteCount, err = NewFavoriteRepository(tx).VideoFavoriteCount(video.Id)
+		var (
+			FavoriteCount int64
+			CommentCount  int64
+			IsFavorite    bool
+		)
+		FavoriteCount, err = NewFavoriteRepository(tx).VideoFavoriteCount(video.Id)
 		if err != nil {
 			return
 		}
-		video.CommentCount, err = NewCommentRepository(tx).VideoCommentCount(video.Id)
+		CommentCount, err = NewCommentRepository(tx).VideoCommentCount(video.Id)
 		if err != nil {
 			return
 		}
 		if userId != 0 {
-			video.IsFavorite, err = NewFavoriteRepository(tx).IsFavorite(userId, video.Id)
+			IsFavorite, err = NewFavoriteRepository(tx).IsFavorite(userId, video.Id)
+		}
+		video.Extra = &model.VideoExtra{
+			FavoriteCount: FavoriteCount,
+			CommentCount:  CommentCount,
+			IsFavorite:    IsFavorite,
 		}
 		return
 	})

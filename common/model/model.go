@@ -5,22 +5,6 @@ import (
 	"time"
 )
 
-/*
-message User {
-  required int64 id = 1; // 用户id
-  required string name = 2; // 用户名称
-  optional int64 follow_count = 3; // 关注总数
-  optional int64 follower_count = 4; // 粉丝总数
-  required bool is_follow = 5; // true-已关注，false-未关注
-  optional string avatar = 6; //用户头像
-  optional string background_image = 7; //用户个人页顶部大图
-  optional string signature = 8; //个人简介
-  optional int64 total_favorited = 9; //获赞数量
-  optional int64 work_count = 10; //作品数量
-  optional int64 favorite_count = 11; //点赞数量
-}
-*/
-
 // User 用户表
 type User struct {
 	Id       uint   `gorm:"primarykey" json:"id,omitempty"`
@@ -35,24 +19,17 @@ type User struct {
 	Signature       string `json:"signature,omitempty"`
 
 	// 不直接储存，需要查询得到
-	FollowCount    int64 `gorm:"-:all" json:"follow_count,omitempty"`
-	FanCount       int64 `gorm:"-:all" json:"follower_count,omitempty"`
-	IsFollow       bool  `gorm:"-:all" json:"is_follow,omitempty"`
-	TotalFavorited int64 `gorm:"-:all" json:"total_favorited,omitempty"`
-	WorkCount      int64 `gorm:"-:all" json:"work_count,omitempty"`
-	FavoriteCount  int64 `gorm:"-:all" json:"favorite_count,omitempty"`
+	Extra *UserExtra `gorm:"-:all"`
+}
+type UserExtra struct {
+	FollowCount    int64 `json:"follow_count,omitempty"`
+	FanCount       int64 `json:"follower_count,omitempty"`
+	IsFollow       bool  `json:"is_follow,omitempty"`
+	TotalFavorited int64 `json:"total_favorited,omitempty"`
+	WorkCount      int64 `json:"work_count,omitempty"`
+	FavoriteCount  int64 `json:"favorite_count,omitempty"`
 }
 
-/*
-  required int64 id = 1; // 视频唯一标识
-  required User author = 2; // 视频作者信息
-  required string play_url = 3; // 视频播放地址
-  required string cover_url = 4; // 视频封面地址
-  required int64 favorite_count = 5; // 视频的点赞总数
-  required int64 comment_count = 6; // 视频的评论总数
-  required bool is_favorite = 7; // true-已点赞，false-未点赞
-  required string title = 8; // 视频标题
-*/
 // Video 视频表
 type Video struct {
 	Id        uint      `gorm:"primarykey" json:"id,omitempty"`
@@ -65,19 +42,14 @@ type Video struct {
 	CoverUrl  string    `gorm:"not null" json:"cover_url,omitempty"`
 
 	// 不直接储存，需要后续查询得到
-	FavoriteCount int64 `gorm:"-:all" json:"favorite_count,omitempty"`
-	CommentCount  int64 `gorm:"-:all" json:"comment_count,omitempty"`
-	IsFavorite    bool  `gorm:"-:all" json:"is_favorite,omitempty"`
+	Extra *VideoExtra `gorm:"-:all"`
+}
+type VideoExtra struct {
+	FavoriteCount int64 `json:"favorite_count,omitempty"`
+	CommentCount  int64 `json:"comment_count,omitempty"`
+	IsFavorite    bool  `json:"is_favorite,omitempty"`
 }
 
-/*
-message Comment {
-  required int64 id = 1; // 视频评论id
-  required User user =2; // 评论用户信息
-  required string content = 3; // 评论内容
-  required string create_date = 4; // 评论发布日期，格式 mm-dd
-}
-*/
 // Comment 评论表
 type Comment struct {
 	Id         uint      `gorm:"primarykey" json:"id,omitempty"`
@@ -114,13 +86,6 @@ type Message struct {
 	CreatedAt  time.Time `gorm:"not null" json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
 }
-
-// // Friend 好友表
-// type Friend struct {
-// 	gorm.Model
-// 	UserId   int64 `gorm:"index"`
-// 	FriendId int64 `gorm:"index"`
-// }
 
 // 提供访问Repository的接口
 type ServiceBase interface {
@@ -206,6 +171,7 @@ type FavoriteRepository interface {
 
 type FavoriteService interface {
 	FavoriteAction(isFavorite bool, userId uint, videoId uint) error
+	FavoriteList(currentId uint, targetId uint) (videos []Video, err error)
 }
 
 type MessageService interface {
