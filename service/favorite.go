@@ -20,7 +20,7 @@ var (
 
 // NewService: construction function, injected by user repository
 func NewFavorite() model.FavoriteService {
-	userOnce.Do(func() {
+	favoriteOnce.Do(func() {
 		favoriteInstance = &favoriteService{
 			repository.NewTableVistor(),
 			dbcore.NewTxImpl(),

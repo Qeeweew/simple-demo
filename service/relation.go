@@ -17,9 +17,20 @@ type relationService struct {
 }
 
 var (
-	ErrFollowSelf = errors.New("can not follow yourself")
-	relationOnce  sync.Once
+	ErrFollowSelf    = errors.New("can not follow yourself")
+	relationOnce     sync.Once
+	relationInstance *relationService
 )
+
+func NewRelation() model.RelationService {
+	relationOnce.Do(func() {
+		relationInstance = &relationService{
+			repository.NewTableVistor(),
+			dbcore.NewTxImpl(),
+		}
+	})
+	return relationInstance
+}
 
 const (
 	doFollow = iota + 1
@@ -105,18 +116,4 @@ func (r *relationService) FanList(token string, userId uint) ([]*model.User, err
 		return nil, err
 	}
 	return users, nil
-}
-
-var (
-	relationInstance *relationService
-)
-
-func NewRelation() model.RelationService {
-	relationOnce.Do(func() {
-		relationInstance = &relationService{
-			repository.NewTableVistor(),
-			dbcore.NewTxImpl(),
-		}
-	})
-	return relationInstance
 }
