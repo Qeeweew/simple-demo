@@ -9,9 +9,6 @@ import (
 )
 
 func initRouter(r *gin.Engine) {
-	// 鉴权中间件
-	r.Use(middleware.JWTAuthMiddleware())
-
 	// 用于存放视频
 	r.Static("/videos", config.AppCfg.VideoPath)
 
@@ -27,7 +24,7 @@ func initRouter(r *gin.Engine) {
 	userGroup := apiRouter.Group("/user")
 	{
 		// 获取用户登录信息
-		userGroup.GET("/", controller.UserInfo)
+		userGroup.GET("/", middleware.JWTAuthMiddleware(), controller.UserInfo)
 
 		// 新用户注册
 		userGroup.POST("/register/", controller.Register)
@@ -37,7 +34,7 @@ func initRouter(r *gin.Engine) {
 	}
 
 	// 视频发布相关
-	publishGroup := apiRouter.Group("/publish")
+	publishGroup := apiRouter.Group("/publish", middleware.JWTAuthMiddleware())
 	{
 		// 用户上传视频
 		publishGroup.POST("/action/", controller.Publish)
@@ -47,7 +44,7 @@ func initRouter(r *gin.Engine) {
 	}
 
 	// 点赞相关
-	favoriteGroup := apiRouter.Group("/favorite")
+	favoriteGroup := apiRouter.Group("/favorite", middleware.JWTAuthMiddleware())
 	{
 		// 点赞操作
 		favoriteGroup.POST("/action/", controller.FavoriteAction)
@@ -57,7 +54,7 @@ func initRouter(r *gin.Engine) {
 	}
 
 	// 评论相关
-	commentGroup := apiRouter.Group("/comment")
+	commentGroup := apiRouter.Group("/comment", middleware.JWTAuthMiddleware())
 	{
 		// 评论操作
 		commentGroup.POST("/action/", controller.CommentAction)
@@ -67,7 +64,7 @@ func initRouter(r *gin.Engine) {
 	}
 
 	// 消息相关
-	messageGroup := apiRouter.Group("/message")
+	messageGroup := apiRouter.Group("/message", middleware.JWTAuthMiddleware())
 	{
 		// 聊天记录
 		messageGroup.GET("/chat/", controller.MessageChat)
@@ -77,7 +74,7 @@ func initRouter(r *gin.Engine) {
 	}
 
 	// 用户关系相关
-	relationGroup := apiRouter.Group("/relation")
+	relationGroup := apiRouter.Group("/relation", middleware.JWTAuthMiddleware())
 	{
 		// 对指定用户 关注 取关
 		relationGroup.POST("/action/", controller.RelationAction)

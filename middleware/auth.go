@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"path"
 	"simple-demo/common/result"
 	"simple-demo/utils"
 
@@ -18,16 +17,6 @@ var skipPaths = []string{
 func JWTAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 跳过不需要鉴权的
-		for _, path := range skipPaths {
-			if path == c.FullPath() {
-				c.Next()
-				return
-			}
-		}
-		if matches, _ := path.Match("/videos/*", c.FullPath()); matches {
-			c.Next()
-			return
-		}
 		type TokenReq struct {
 			Token string `form:"token" binding:"required"`
 		}
