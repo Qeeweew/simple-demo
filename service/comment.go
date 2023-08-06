@@ -46,7 +46,7 @@ func (c *commentService) CommentList(userId uint, videoId uint) (comments []mode
 				return
 			}
 			for i := range comments {
-				c.User(txctx).FillExtraData(userId, &comments[i].User)
+				c.User(txctx).FillExtraData(userId, &comments[i].User, false)
 			}
 			return nil
 		})

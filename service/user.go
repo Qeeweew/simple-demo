@@ -55,7 +55,7 @@ func (u *userService) UserInfo(currentId uint, targetId uint) (user model.User, 
 		if err != nil {
 			return
 		}
-		err = u.User(txctx).FillExtraData(currentId, &user)
+		err = u.User(txctx).FillExtraData(currentId, &user, true)
 		if err != nil {
 			return
 		}

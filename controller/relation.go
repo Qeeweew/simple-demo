@@ -37,7 +37,8 @@ func RelationAction(c *gin.Context) {
 		return
 	}
 
-	err = service.NewRelation().FollowAction(req.Token, req.ToUserId, req.ActionType)
+	var currentId = c.Keys["auth_id"].(uint)
+	err = service.NewRelation().FollowAction(currentId, req.ToUserId, req.ActionType)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		if req.ActionType == 1 {
@@ -69,9 +70,10 @@ func FollowList(c *gin.Context) {
 		result.Error(c, result.QueryParamErrorStatus)
 		return
 	}
+	var currentId = c.Keys["auth_id"].(uint)
 
 	// 获取关注列表
-	followList, err := service.NewRelation().FollowList(req.Token, req.UserId)
+	followList, err := service.NewRelation().FollowList(currentId, req.UserId)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		result.Error(c, result.Status{
@@ -97,9 +99,10 @@ func FollowerList(c *gin.Context) {
 		result.Error(c, result.QueryParamErrorStatus)
 		return
 	}
+	var currentId = c.Keys["auth_id"].(uint)
 
 	// 获取粉丝列表
-	followerList, err := service.NewRelation().FanList(req.Token, req.UserId)
+	followerList, err := service.NewRelation().FanList(currentId, req.UserId)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		result.Error(c, result.Status{

@@ -115,7 +115,7 @@ type UserRepository interface {
 	Save(user *User) error
 	FindById(userId uint, user *User) error
 	FindByName(name string, user *User) error
-	FillExtraData(currentUserId uint, targetUser *User) error
+	FillExtraData(currentUserId uint, targetUser *User, loadOptional bool) error
 }
 
 type VideoService interface {
@@ -134,9 +134,9 @@ type VideoRepository interface {
 
 type RelationService interface {
 	ServiceBase
-	FollowAction(token string, toUserId uint, actionType int) error
-	FollowList(token string, userId uint) ([]*User, error)
-	FanList(token string, userId uint) ([]*User, error)
+	FollowAction(currentId uint, toUserId uint, actionType int) error
+	FollowList(currentId uint, userId uint) ([]*User, error)
+	FanList(currentId uint, userId uint) ([]*User, error)
 	// TODO: 用户好友列表
 	// ...
 }

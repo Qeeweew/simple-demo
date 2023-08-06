@@ -7,7 +7,6 @@ import (
 	"simple-demo/common/model"
 	"simple-demo/repository"
 	"simple-demo/repository/dbcore"
-	"simple-demo/utils"
 	"sync"
 )
 
@@ -42,23 +41,16 @@ const (
 // 解析token，拿到当前用户的id
 // 用户不能关注自己
 // /*
-func (r *relationService) FollowAction(token string, toUserId uint, actionType int) error {
-	// 解析token
-	userId, err := utils.ParseToken(token)
-	if err != nil {
-		log.Logger.Error("token parse error")
-		return err
-	}
-
+func (r *relationService) FollowAction(currentId uint, targetId uint, actionType int) error {
 	return r.tximpl.Transaction(context.Background(), func(txctx context.Context) error {
 		// 用户不能关注自己
-		if userId == toUserId {
+		if currentId == targetId {
 			log.Logger.Error("can not follow yourself")
 			return ErrFollowSelf
 		}
 
 		// 查询关注关系
-		isFollow, err := r.Relation(txctx).CheckFollowRelationship(userId, toUserId)
+		isFollow, err := r.Relation(txctx).CheckFollowRelationship(currentId, targetId)
 		if err != nil {
 			log.Logger.Error("check follow relationship error")
 			return err
@@ -66,7 +58,7 @@ func (r *relationService) FollowAction(token string, toUserId uint, actionType i
 
 		// 关注
 		if actionType == doFollow && !isFollow {
-			if err := r.Relation(txctx).Follow(userId, toUserId); err != nil {
+			if err := r.Relation(txctx).Follow(currentId, targetId); err != nil {
 				log.Logger.Error("follow error")
 				return err
 			}
@@ -74,7 +66,7 @@ func (r *relationService) FollowAction(token string, toUserId uint, actionType i
 
 		// 取消关注
 		if actionType == unFollow && isFollow {
-			if err := r.Relation(txctx).UnFollow(userId, toUserId); err != nil {
+			if err := r.Relation(txctx).UnFollow(currentId, targetId); err != nil {
 				log.Logger.Error("unfollow error")
 				return err
 			}
@@ -84,36 +76,38 @@ func (r *relationService) FollowAction(token string, toUserId uint, actionType i
 
 }
 
-func (r *relationService) FollowList(token string, userId uint) ([]*model.User, error) {
-	// 解析token
-	userId, err := utils.ParseToken(token)
-	if err != nil {
-		log.Logger.Error("token parse error")
-		return nil, err
-	}
-
+func (r *relationService) FollowList(currentId uint, userId uint) (users []*model.User, err error) {
 	// 查询关注列表
-	users, err := r.Relation(context.Background()).FollowList(userId)
-	if err != nil {
-		log.Logger.Error("follow list error")
-		return nil, err
-	}
-	return users, nil
+	err = r.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
+		users, err = r.Relation(txctx).FollowList(userId)
+		if err != nil {
+			log.Logger.Error("follow list error")
+			return
+		}
+		for i := range users {
+			if err = r.User(txctx).FillExtraData(currentId, users[i], false); err != nil {
+				return
+			}
+		}
+		return
+	})
+	return
 }
 
-func (r *relationService) FanList(token string, userId uint) ([]*model.User, error) {
-	// 解析token
-	userId, err := utils.ParseToken(token)
-	if err != nil {
-		log.Logger.Error("token parse error")
-		return nil, err
-	}
-
+func (r *relationService) FanList(currentId uint, userId uint) (users []*model.User, err error) {
 	// 查询粉丝列表
-	users, err := r.Relation(context.Background()).FanList(userId)
-	if err != nil {
-		log.Logger.Error("fan list error")
-		return nil, err
-	}
-	return users, nil
+	err = r.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
+		users, err = r.Relation(txctx).FanList(userId)
+		if err != nil {
+			log.Logger.Error("follow list error")
+			return
+		}
+		for i := range users {
+			if err = r.User(txctx).FillExtraData(currentId, users[i], false); err != nil {
+				return
+			}
+		}
+		return
+	})
+	return
 }
