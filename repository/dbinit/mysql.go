@@ -89,8 +89,8 @@ func createDB(dbInfo struct {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true, // 使用单数表名
 		},
-		PrepareStmt: true,                                // 预处理语句
-		Logger:      logger.Default.LogMode(logger.Info), // 日志级别
+		PrepareStmt: true,           // 预处理语句
+		Logger:      logger.Default, // 日志级别
 	})
 	return DB, err
 }
