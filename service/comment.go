@@ -41,12 +41,12 @@ func (c *commentService) CommentList(userId uint, videoId uint) (comments []mode
 	err = c.tximpl.Transaction(
 		context.Background(),
 		func(txctx context.Context) (err error) {
-			comments, err = c.Comment(context.Background()).VideoCommentList(videoId)
+			comments, err = c.Comment(txctx).VideoCommentList(videoId)
 			if err != nil {
 				return
 			}
 			for i := range comments {
-				c.User(context.Background()).FillExtraData(userId, &comments[i].User)
+				c.User(txctx).FillExtraData(userId, &comments[i].User)
 			}
 			return nil
 		})

@@ -51,7 +51,7 @@ func (u *userService) Register(user *model.User) error {
 
 func (u *userService) UserInfo(currentId uint, targetId uint) (user model.User, err error) {
 	err = u.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
-		err = u.User(context.Background()).FindById(targetId, &user)
+		err = u.User(txctx).FindById(targetId, &user)
 		if err != nil {
 			return
 		}
