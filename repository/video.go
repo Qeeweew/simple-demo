@@ -36,7 +36,7 @@ func (v *videoRepository) FeedList(limit uint, videos *[]model.Video) error {
 
 func (v *videoRepository) FillExtraData(userId uint, video *model.Video) (err error) {
 	return v.Transaction(func(tx *gorm.DB) (err error) {
-		err = NewUserRepository(tx).FillExtraData(userId, &video.Author, false)
+		err = NewUserRepository(tx).FillExtraData(userId, &video.Author, true)
 		if err != nil {
 			return
 		}
