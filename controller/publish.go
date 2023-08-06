@@ -41,19 +41,21 @@ func Publish(c *gin.Context) {
 		return
 	}
 	log.Logger.Info("Saving video Succeed", zap.String("File", finalName))
-	c.JSON(http.StatusOK, Response{
-		StatusCode: 0,
-		StatusMsg:  finalName + " uploaded successfully",
-	})
 	var video = model.Video{
 		AuthorId: userId,
 		Title:    title,
 		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
 		CoverUrl: "https://img.zcool.cn/community/0144255afb8e64a801207ab475a594.jpg@1280w_1l_2o_100sh.jpg",
 	}
-	log.Logger.Info("Publish video", zap.String("video url", video.PlayUrl))
-	service.NewVideo().Publish(&video)
+	if err := service.NewVideo().Publish(&video); err != nil {
+		result.Error(c, result.ServerErrorStatus)
+		log.Logger.Error("Saving video Failed", zap.String("err", err.Error()))
+	}
 	log.Logger.Info("Publish Succeed", zap.String("url", video.PlayUrl))
+	c.JSON(http.StatusOK, Response{
+		StatusCode: 0,
+		StatusMsg:  finalName + " uploaded successfully",
+	})
 }
 
 // PublishList all users have same publish video list

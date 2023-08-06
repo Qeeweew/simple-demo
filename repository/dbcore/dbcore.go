@@ -6,18 +6,21 @@ import (
 	"simple-demo/common/log"
 	"simple-demo/repository/dbinit"
 
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 var globalDB *gorm.DB
 
-// var Redis *redis.Client
+var redisDB *redis.Client
 
 func Init() {
 	globalDB = dbinit.MySQLInit()
+	redisDB = dbinit.RedisInit()
+}
 
-	// TODO: 等之后上缓存的时候再放开
-	// Re
+func GetRedisClient() *redis.Client {
+	return redisDB
 }
 
 // https://github.com/win5do/go-microservice-demo/blob/main/pkg/repository/db/dbcore/core.go#L107

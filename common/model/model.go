@@ -17,8 +17,11 @@ type User struct {
 	Avatar          string `json:"avatar,omitempty"`
 	BackgroundImage string `json:"background_image,omitempty"`
 	Signature       string `json:"signature,omitempty"`
+	*UserExtra
+}
 
-	// 不直接储存，需要查询得到
+// 不直接储存，需要查询得到
+type UserExtra struct {
 	FollowCount    int64 `gorm:"-:all" json:"follow_count,omitempty"`
 	FanCount       int64 `gorm:"-:all" json:"follower_count,omitempty"`
 	IsFollow       bool  `gorm:"-:all" json:"is_follow,omitempty"`
@@ -38,7 +41,11 @@ type Video struct {
 	PlayUrl   string    `gorm:"not null" json:"play_url,omitempty"`
 	CoverUrl  string    `gorm:"not null" json:"cover_url,omitempty"`
 
-	// 不直接储存，需要后续查询得到
+	*VideoExtra
+}
+
+// 不直接储存，需要后续查询得到
+type VideoExtra struct {
 	FavoriteCount int64 `gorm:"-:all" json:"favorite_count,omitempty"`
 	CommentCount  int64 `gorm:"-:all" json:"comment_count,omitempty"`
 	IsFavorite    bool  `gorm:"-:all" json:"is_favorite,omitempty"`
