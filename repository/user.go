@@ -39,9 +39,10 @@ func (u *userRepository) FillExtraData(currentUserId uint, targetUser *model.Use
 			TotalFavorited int64
 		)
 		IsFollow, err = NewRelationRepository(tx).CheckFollowRelationship(currentUserId, targetUser.Id)
+		// TODO: replace with redis operation
 		if loadOptional {
-			FollowCount = tx.Where(&model.User{Id: targetUser.Id}).Association("Follows").Count()
-			FanCount = tx.Where(&model.User{Id: targetUser.Id}).Association("Fans").Count()
+			FollowCount = tx.Model(&model.User{Id: targetUser.Id}).Association("Follows").Count()
+			FanCount = tx.Model(&model.User{Id: targetUser.Id}).Association("Fans").Count()
 			if err != nil {
 				return
 			}
@@ -53,7 +54,6 @@ func (u *userRepository) FillExtraData(currentUserId uint, targetUser *model.Use
 			if err != nil {
 				return
 			}
-			// TODO: Replace with ORM operation
 			err = tx.Raw("SELECT COUNT(*) FROM user INNER JOIN video ON user.id = video.author_id INNER JOIN favorite ON video.id = favorite.video_id WHERE user.id = ?", targetUser.Id).
 				Scan(&TotalFavorited).Error
 		}

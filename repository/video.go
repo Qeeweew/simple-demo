@@ -45,6 +45,7 @@ func (v *videoRepository) FillExtraData(userId uint, video *model.Video) (err er
 			CommentCount  int64
 			IsFavorite    bool
 		)
+		// TODO: replace with redis operation
 		FavoriteCount, err = NewFavoriteRepository(tx).VideoFavoriteCount(video.Id)
 		if err != nil {
 			return
