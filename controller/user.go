@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"simple-demo/common/log"
 	"simple-demo/common/model"
@@ -23,8 +24,8 @@ type UserResponse struct {
 	User User `json:"user"`
 }
 type LoginRequest = struct {
-	Username string `form:"username" binding:"required"`
-	Password string `form:"password" binding:"required"`
+	Username string `form:"username" binding:"required,min=1,max=32"`
+	Password string `form:"password" binding:"required,min=6,max=32"`
 }
 
 type UserInfoRequest = struct {
@@ -33,18 +34,27 @@ type UserInfoRequest = struct {
 
 func Register(c *gin.Context) {
 	var req LoginRequest
+
 	if err := c.ShouldBind(&req); err != nil {
 		log.Logger.Error("check params error", zap.String("err", err.Error()))
 		result.Error(c, result.QueryParamErrorStatus)
 		return
 	}
+
 	var user = model.User{Name: req.Username, Password: req.Password}
 	err := service.NewUser().Register(&user)
 	if err != nil {
-		log.Logger.Error("Register error",
-			zap.String("username", user.Name), zap.String("password", user.Password),
-			zap.String("err", err.Error()))
-		result.Error(c, result.ServerErrorStatus)
+		if errors.Is(err, service.ErrUserExist) {
+			// 用户名已存在
+			result.Error(c, result.UsernameExitErrorStatus)
+			return
+		} else {
+			// 服务器错误
+			log.Logger.Error("Register error",
+				zap.String("username", user.Name), zap.String("password", user.Password),
+				zap.String("err", err.Error()))
+			result.Error(c, result.ServerErrorStatus)
+		}
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},
