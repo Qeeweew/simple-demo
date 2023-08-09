@@ -4,6 +4,8 @@ import (
 	"context"
 	"simple-demo/common/model"
 	"simple-demo/repository/dbcore"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type tableVisitor struct{}
@@ -34,4 +36,8 @@ func (*tableVisitor) Comment(ctx context.Context) model.CommentRepository {
 
 func (*tableVisitor) Message(ctx context.Context) model.MessageRepository {
 	return NewMessageRepository(dbcore.GetDB(ctx))
+}
+
+func (*tableVisitor) RedisClient() *redis.Client {
+	return dbcore.GetRedisClient()
 }

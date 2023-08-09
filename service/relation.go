@@ -8,6 +8,8 @@ import (
 	"simple-demo/repository"
 	"simple-demo/repository/dbcore"
 	"sync"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type relationService struct {
@@ -109,5 +111,60 @@ func (r *relationService) FanList(currentId uint, userId uint) (users []*model.U
 		}
 		return
 	})
+	return
+}
+
+// 这里好友列表 = 粉丝列表 + 关注列表
+// 这样保证 好友关系是对称的
+func (r *relationService) FriendList(userId uint) (friendUsers []model.FriendUser, err error) {
+	// 查询好友列表
+	var users []model.User
+	err = r.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
+		users, err = r.Relation(txctx).FriendList(userId)
+		if err != nil {
+			log.Logger.Error("follow list error")
+			return
+		}
+		for i := range users {
+			if err = r.User(txctx).FillExtraData(userId, &users[i], false); err != nil {
+				return
+			}
+		}
+		return
+	})
+	if err != nil {
+		return
+	}
+	ctx := context.Background()
+
+	// redis 查询好友间最后一条消息
+	pipe := r.RedisClient().Pipeline()
+	var vals []*redis.MapStringStringCmd
+	for _, u := range users {
+		vals = append(vals, pipe.HGetAll(ctx, genChatKey(userId, u.Id)))
+	}
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		return
+	}
+
+	for i := range users {
+		var msg MessageLatest
+		var msgType int64
+		if vals[i].Err() == nil {
+			vals[i].Scan(&msg)
+			if msg.Sender == userId {
+				msgType = 1
+			} else {
+				msgType = 0
+			}
+		}
+
+		friendUsers = append(friendUsers, model.FriendUser{
+			User:    users[i],
+			Message: msg.Message,
+			MsgType: msgType,
+		})
+	}
 	return
 }

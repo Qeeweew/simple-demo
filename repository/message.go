@@ -15,3 +15,15 @@ func NewMessageRepository(db *gorm.DB) model.MessageRepository {
 		db,
 	}
 }
+
+func (m *messageRepository) Create(message *model.Message) (err error) {
+	return m.DB.Create(message).Error
+}
+
+func (m *messageRepository) MessageList(preMsgTime int64, userId uint, friendId uint) (messages []model.Message, err error) {
+	err = m.DB.Where("create_at > ?", preMsgTime).Where(
+		m.DB.Where("from_user_id = ? AND to_user_id = ?", userId, friendId).
+			Or("from_user_id = ? AND to_user_id = ?", friendId, userId)).
+		Find(&messages).Error
+	return
+}

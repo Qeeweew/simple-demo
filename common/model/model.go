@@ -3,6 +3,8 @@ package model
 import (
 	"context"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // User 用户表
@@ -18,6 +20,12 @@ type User struct {
 	BackgroundImage string `json:"background_image,omitempty"`
 	Signature       string `json:"signature,omitempty"`
 	*UserExtra
+}
+
+type FriendUser struct {
+	User    `redis:"-"`
+	Message string `json:"message,omitempty"`
+	MsgType int64  `json:"msgType"`
 }
 
 // 不直接储存，需要查询得到
@@ -80,12 +88,12 @@ message Message {
 */
 // Message 聊天消息表
 type Message struct {
-	Id         uint      `gorm:"primarykey" json:"id,omitempty"`
-	FromId     uint      `gorm:"index" json:"from_user_id,omitempty"`
-	ToUserId   uint      `gorm:"index" json:"to_user_id,omitempty"`
-	Content    string    `gorm:"not null" json:"content,omitempty"`
-	CreatedAt  time.Time `gorm:"not null" json:"-"`
-	CreateDate string    `gorm:"-:all" json:"create_date"`
+	Id         uint   `gorm:"primarykey" json:"id,omitempty"`
+	FromUserId uint   `gorm:"index" json:"from_user_id,omitempty"`
+	ToUserId   uint   `gorm:"index" json:"to_user_id,omitempty"`
+	Content    string `gorm:"not null" json:"content,omitempty"`
+	CreatedAt  int64  `gorm:"not null" json:"-"`
+	CreateDate string `gorm:"-:all" json:"create_date"`
 }
 
 // 提供访问Repository的接口
@@ -95,6 +103,8 @@ type ServiceBase interface {
 	Relation(ctx context.Context) RelationRepository
 	Comment(ctx context.Context) CommentRepository
 	Favorite(ctx context.Context) FavoriteRepository
+	Message(ctx context.Context) MessageRepository
+	RedisClient() *redis.Client
 }
 
 // Service启动Transaction的接口
@@ -137,8 +147,7 @@ type RelationService interface {
 	FollowAction(currentId uint, toUserId uint, actionType int) error
 	FollowList(currentId uint, userId uint) ([]*User, error)
 	FanList(currentId uint, userId uint) ([]*User, error)
-	// TODO: 用户好友列表
-	// ...
+	FriendList(userId uint) ([]FriendUser, error)
 }
 
 type RelationRepository interface {
@@ -147,6 +156,7 @@ type RelationRepository interface {
 	UnFollow(userId uint, toUserId uint) error
 	FollowList(userId uint) ([]*User, error)
 	FanList(userId uint) ([]*User, error)
+	FriendList(userId uint) ([]User, error)
 }
 
 type CommentRepository interface {
@@ -176,7 +186,11 @@ type FavoriteService interface {
 }
 
 type MessageService interface {
+	SendMessage(userId uint, toUserId uint, content string) error
+	ChatHistory(preMsgTime int64, userId uint, toUserId uint) ([]Message, error)
 }
 
 type MessageRepository interface {
+	Create(message *Message) (err error)
+	MessageList(preMsgTime int64, userId uint, friendId uint) (messages []Message, err error)
 }
