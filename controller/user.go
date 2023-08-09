@@ -74,8 +74,14 @@ func Login(c *gin.Context) {
 	var user = model.User{Name: req.Username, Password: req.Password}
 	err := service.NewUser().Login(&user)
 	if err != nil {
-		log.Logger.Error("Login error", zap.String("err", err.Error()))
-		result.Error(c, result.LoginErrorStatus)
+		if errors.Is(err, service.ErrPassword) {
+			log.Logger.Info("password error", zap.Any("user", user))
+			result.Error(c, result.PasswordErrorStatus)
+			return
+		} else {
+			log.Logger.Error("Login error", zap.String("err", err.Error()))
+			result.Error(c, result.LoginErrorStatus)
+		}
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
 			Response: Response{StatusCode: 0},

@@ -22,6 +22,7 @@ var (
 	userInstance *userService
 	userOnce     sync.Once
 	ErrUserExist = errors.New("user already exists")
+	ErrPassword  = errors.New("password error")
 )
 
 // NewService: construction function, injected by user repository
@@ -44,8 +45,11 @@ func (u *userService) Login(user *model.User) error {
 	if err != nil {
 		return err
 	}
-	if user.Password != password {
-		return errors.New("wrong password")
+	// 密码校验
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		log.Logger.Error("password error", zap.Any("user", user))
+		return ErrPassword
 	}
 	return nil
 }
