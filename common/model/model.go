@@ -92,8 +92,7 @@ type Message struct {
 	FromUserId uint   `gorm:"index" json:"from_user_id,omitempty"`
 	ToUserId   uint   `gorm:"index" json:"to_user_id,omitempty"`
 	Content    string `gorm:"not null" json:"content,omitempty"`
-	CreatedAt  int64  `gorm:"not null" json:"-"`
-	CreateDate string `gorm:"-:all" json:"create_date"`
+	CreateTime int64  `gorm:"autoCreateTime" json:"create_time"` // 使用时间戳秒数填充创建时间
 }
 
 // 提供访问Repository的接口

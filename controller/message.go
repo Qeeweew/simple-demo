@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"simple-demo/common/log"
 	"simple-demo/common/result"
 	"simple-demo/service"
 
@@ -48,11 +49,12 @@ func MessageAction(c *gin.Context) {
 func MessageChat(c *gin.Context) {
 	var req MessageChatRequst
 	if err := c.ShouldBind(&req); err != nil {
-		result.Error(c, result.QueryParamErrorStatus)
+		log.Logger.Sugar().Info(req, err)
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
+		// result.Error(c, result.QueryParamErrorStatus)
 		return
 	}
 	userId := c.Keys["auth_id"].(uint)
-
 	messageList, err := service.NewMessage().ChatHistory(req.PreMsgTime, userId, req.ToUserId)
 	if err != nil {
 		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
