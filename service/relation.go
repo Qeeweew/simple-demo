@@ -115,14 +115,14 @@ func (r *relationService) FanList(currentId uint, userId uint) (users []*model.U
 }
 
 // 这里好友列表 = 粉丝列表 + 关注列表
-// 这样保证 好友关系是对称的
+// 这样保证 `好友关系` 是对称的
 func (r *relationService) FriendList(userId uint) (friendUsers []model.FriendUser, err error) {
 	// 查询好友列表
 	var users []model.User
 	err = r.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
 		users, err = r.Relation(txctx).FriendList(userId)
 		if err != nil {
-			log.Logger.Error("follow list error")
+			log.Logger.Error("friend list error")
 			return
 		}
 		for i := range users {

@@ -28,7 +28,7 @@ func (r *relationRepository) FollowList(userId uint) ([]*model.User, error) {
 }
 
 func (r *relationRepository) FriendList(userId uint) (users []model.User, err error) {
-	err = r.DB.Raw("SELECT * FROM user WHERE id IN (SELECT id FROM follows WHERE follow_id = @u OR user_id = @u)", sql.Named("u", userId), &users).Error
+	err = r.DB.Raw("SELECT * FROM user WHERE id IN ((SELECT follow_id FROM follows WHERE user_id = @u) UNION (SELECT user_id FROM follows WHERE follow_id = @u))", sql.Named("u", userId)).Scan(&users).Error
 	return
 }
 

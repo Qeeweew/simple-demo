@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"net/http"
 	"simple-demo/common/log"
 	"simple-demo/common/result"
 	"simple-demo/service"
@@ -117,12 +118,21 @@ func FollowerList(c *gin.Context) {
 	})
 }
 
-// TODO: FriendList all users have same friend list
-//func FriendList(c *gin.Context) {
-//	c.JSON(http.StatusOK, UserListResponse{
-//		Response: Response{
-//			StatusCode: 0,
-//		},
-//		UserList: []User{DemoUser},
-//	})
-//}
+func FriendList(c *gin.Context) {
+	var req RelationListReq
+	// 参数校验
+	if err := c.ShouldBind(&req); err != nil {
+		log.Logger.Error("check params error")
+		result.Error(c, result.QueryParamErrorStatus)
+		return
+	}
+	userList, err := service.NewRelation().FriendList(req.UserId)
+	if err != nil {
+		log.Logger.Error(err.Error())
+		c.JSON(http.StatusOK, Response{StatusCode: 0, StatusMsg: err.Error()})
+		return
+	}
+	result.Success(c, result.R{
+		"user_list": userList,
+	})
+}
