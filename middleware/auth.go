@@ -23,7 +23,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		var req TokenReq
 
 		if err := c.ShouldBind(&req); err != nil {
-			result.Error(c, result.MissingToken)
+			result.Error(c, result.MissingTokenErrorStatus)
 			c.Abort()
 			return
 		}

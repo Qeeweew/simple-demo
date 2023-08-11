@@ -11,35 +11,35 @@ var (
 	SuccessStatus = newStatus(200, "success")
 
 	// 400 BAD
-	QueryParamErrorStatus   = newStatus(40001, "请求的参数错误")
-	LoginErrorStatus        = newStatus(40002, "登录发生错误")
-	RegisterErrorStatus     = newStatus(40003, "注册发生错误")
-	UsernameExitErrorStatus = newStatus(40004, "用户名已存在")
-	TokenErrorStatus        = newStatus(40005, "token 错误")
-	InfoErrorStatus         = newStatus(40006, "无法获取该用户信息")
-	FileErrorStatus         = newStatus(40007, "文件上传失败")
-	PublishErrorStatus      = newStatus(40008, "发布时出现错误")
-	FeedErrorStatus         = newStatus(40009, "获取视频流出错")
-	EmptyErrorStatus        = newStatus(40010, "用户名或密码为空") // should be useless
-	FollowErrorStatus       = newStatus(40011, "关注失败")
-	UnFollowErrorStatus     = newStatus(40012, "取消关注失败")
-	FavoriteErrorStatus     = newStatus(40013, "点赞失败")
-	FollowListErrorStatus   = newStatus(40014, "获取关注列表时发生了错误")
-	FollowerListErrorStatus = newStatus(40015, "获取粉丝列表时发生了错误")
-	MissingToken            = newStatus(40016, "缺失Token")
+	QueryParamErrorStatus   = newStatus(400, "请求的参数错误")
+	LoginErrorStatus        = newStatus(400, "登录发生错误")
+	RegisterErrorStatus     = newStatus(400, "注册发生错误")
+	UsernameExitErrorStatus = newStatus(400, "用户名已存在")
+	TokenErrorStatus        = newStatus(400, "token 错误")
+	InfoErrorStatus         = newStatus(400, "无法获取该用户信息")
+	FileErrorStatus         = newStatus(400, "文件上传失败")
+	PublishErrorStatus      = newStatus(400, "发布时出现错误")
+	FeedErrorStatus         = newStatus(400, "获取视频流出错")
+	EmptyErrorStatus        = newStatus(400, "用户名或密码为空") // should be useless
+	FollowErrorStatus       = newStatus(400, "关注失败")
+	UnFollowErrorStatus     = newStatus(400, "取消关注失败")
+	FavoriteErrorStatus     = newStatus(400, "点赞失败")
+	FollowListErrorStatus   = newStatus(400, "获取关注列表时发生了错误")
+	FollowerListErrorStatus = newStatus(400, "获取粉丝列表时发生了错误")
+	MissingTokenErrorStatus = newStatus(400, "缺失Token")
 
 	// 401 WITHOUT PERMISSION
-	NoLoginErrorStatus = newStatus(40101, "用户未登录")
+	NoLoginErrorStatus = newStatus(401, "用户未登录")
 
 	// 403 ILLEGAL OPERATION
-	PermissionErrorStatus = newStatus(40301, "操作非法")
+	PermissionErrorStatus = newStatus(403, "操作非法")
 
 	// 404 NOT FOUND
-	CommentNotExitErrorStatus = newStatus(40401, "评论不存在")
-	VideoNotExitErrorStatus   = newStatus(40402, "视频不存在")
+	CommentNotExitErrorStatus = newStatus(404, "评论不存在")
+	VideoNotExitErrorStatus   = newStatus(404, "视频不存在")
 
 	// 500 INTERNAL ERROR
-	ServerErrorStatus = newStatus(50001, "服务器内部错误")
+	ServerErrorStatus = newStatus(500, "服务器内部错误")
 )
 
 type Status struct {

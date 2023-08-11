@@ -77,15 +77,6 @@ type Favorite struct {
 	Video   Video `gorm:"foreignKey:VideoId"`
 }
 
-/*
-message Message {
-  required int64 id = 1; // 消息id
-  required int64 to_user_id = 2; // 该消息接收者的id
-  required int64 from_user_id =3; // 该消息发送者的id
-  required string content = 4; // 消息内容
-  optional string create_time = 5; // 消息创建时间
-}
-*/
 // Message 聊天消息表
 type Message struct {
 	Id         uint   `gorm:"primarykey" json:"id,omitempty"`

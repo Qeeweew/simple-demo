@@ -43,16 +43,10 @@ func RelationAction(c *gin.Context) {
 	if err != nil {
 		log.Logger.Error(err.Error())
 		if req.ActionType == 1 {
-			result.Error(c, result.Status{
-				StatusCode: result.FollowErrorStatus.StatusCode,
-				StatusMsg:  result.FollowErrorStatus.StatusMsg,
-			})
+			result.Error(c, result.FollowErrorStatus)
 			return
 		} else {
-			result.Error(c, result.Status{
-				StatusCode: result.UnFollowErrorStatus.StatusCode,
-				StatusMsg:  result.UnFollowErrorStatus.StatusMsg,
-			})
+			result.Error(c, result.UnFollowErrorStatus)
 			return
 		}
 	}
