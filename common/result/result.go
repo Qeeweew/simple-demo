@@ -27,6 +27,7 @@ var (
 	FollowListErrorStatus   = newStatus(400, "获取关注列表时发生了错误")
 	FollowerListErrorStatus = newStatus(400, "获取粉丝列表时发生了错误")
 	MissingTokenErrorStatus = newStatus(400, "缺失Token")
+	PasswordErrorStatus     = newStatus(400, "密码错误")
 
 	// 401 WITHOUT PERMISSION
 	NoLoginErrorStatus = newStatus(401, "用户未登录")

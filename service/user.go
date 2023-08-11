@@ -3,10 +3,14 @@ package service
 import (
 	"context"
 	"errors"
+	"simple-demo/common/log"
 	"simple-demo/common/model"
 	"simple-demo/repository"
 	"simple-demo/repository/dbcore"
 	"sync"
+
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type userService struct {
@@ -17,6 +21,8 @@ type userService struct {
 var (
 	userInstance *userService
 	userOnce     sync.Once
+	ErrUserExist = errors.New("user already exists")
+	ErrPassword  = errors.New("password error")
 )
 
 // NewService: construction function, injected by user repository
@@ -36,14 +42,31 @@ func (u *userService) Login(user *model.User) error {
 	if err != nil {
 		return err
 	}
+	// 密码校验
 	if user.Password != password {
-		return errors.New("wrong password")
+		log.Logger.Error("password error", zap.Any("user", user))
+		return ErrPassword
 	}
 	return nil
 }
 
 func (u *userService) Register(user *model.User) error {
-	return u.User(context.Background()).Save(user)
+	// 检查用户是否注册过
+	err := u.User(context.Background()).FindByName(user.Name, user)
+
+	// 数据库错误
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Logger.Error("mysql error", zap.Error(err))
+		return err
+	}
+
+	// 用户未注册过
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return u.User(context.Background()).Save(user)
+	}
+
+	// 用户已注册
+	return ErrUserExist
 }
 
 func (u *userService) UserInfo(currentId uint, targetId uint) (user model.User, err error) {
