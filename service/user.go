@@ -52,21 +52,24 @@ func (u *userService) Login(user *model.User) error {
 
 func (u *userService) Register(user *model.User) error {
 	// 检查用户是否注册过
-	err := u.User(context.Background()).FindByName(user.Name, user)
+	return u.tximpl.Transaction(context.Background(), func(txctx context.Context) error {
+		err := u.User(txctx).FindByName(user.Name, user)
 
-	// 数据库错误
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Logger.Error("mysql error", zap.Error(err))
-		return err
-	}
+		// 数据库错误
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Logger.Error("mysql error", zap.Error(err))
+			return err
+		}
 
-	// 用户未注册过
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return u.User(context.Background()).Save(user)
-	}
+		// 用户未注册过
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return u.User(txctx).Save(user)
+		}
 
-	// 用户已注册
-	return ErrUserExist
+		// 用户已注册
+		return ErrUserExist
+
+	})
 }
 
 func (u *userService) UserInfo(currentId uint, targetId uint) (user model.User, err error) {
