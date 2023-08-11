@@ -2,16 +2,11 @@ package controller
 
 import (
 	"net/http"
-	"simple-demo/common/log"
 	"simple-demo/common/result"
 	"simple-demo/service"
 
 	"github.com/gin-gonic/gin"
 )
-
-var tempChat = map[string][]Message{}
-
-var messageIdSequence = uint(1)
 
 type ChatResponse struct {
 	Response
@@ -49,9 +44,7 @@ func MessageAction(c *gin.Context) {
 func MessageChat(c *gin.Context) {
 	var req MessageChatRequst
 	if err := c.ShouldBind(&req); err != nil {
-		log.Logger.Sugar().Info(req, err)
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: err.Error()})
-		// result.Error(c, result.QueryParamErrorStatus)
+		result.Error(c, result.QueryParamErrorStatus)
 		return
 	}
 	userId := c.Keys["auth_id"].(uint)
