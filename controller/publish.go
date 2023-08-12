@@ -3,12 +3,14 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"os/exec"
 	"path/filepath"
 	"simple-demo/common/config"
 	"simple-demo/common/log"
 	"simple-demo/common/model"
 	"simple-demo/common/result"
 	"simple-demo/service"
+	"sync/atomic"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -18,6 +20,8 @@ type VideoListResponse struct {
 	Response
 	VideoList []Video `json:"video_list"`
 }
+
+var videoSeqNum int32 = 1
 
 // Publish save upload file to public directory
 func Publish(c *gin.Context) {
@@ -31,21 +35,32 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
+	atomic.AddInt32(&videoSeqNum, 1)
 	filename := filepath.Base(data.Filename)
-	finalName := fmt.Sprintf("%d-%s", userId, filename)
+	finalName := fmt.Sprintf("%d-%s", videoSeqNum, filename)
 	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
 	// 暂时放这里了
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		result.Error(c, result.ServerErrorStatus)
-		log.Logger.Error("Saving video Failed", zap.String("err", err.Error()))
+		log.Logger.Error("Saving video failed", zap.String("err", err.Error()))
 		return
 	}
 	log.Logger.Info("Saving video Succeed", zap.String("File", finalName))
+
+	coverName := fmt.Sprint("cover_", videoSeqNum, ".jpg")
+	coverPath := filepath.Join(config.AppCfg.VideoPath, coverName)
+	cmd := exec.Command(config.AppCfg.FFmpegPath, "-i", saveFile, "-vframes:v", "1", coverPath)
+	if err := cmd.Run(); err != nil {
+		log.Logger.Sugar().Info(cmd.Args)
+		log.Logger.Error("Generating cover failed", zap.String("err", err.Error()))
+		exec.Command("rm", saveFile).Run()
+		return
+	}
 	var video = model.Video{
 		AuthorId: userId,
 		Title:    title,
 		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
-		// TODO: 生成视频封面
+		CoverUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, coverName),
 	}
 	if err := service.NewVideo().Publish(&video); err != nil {
 		result.Error(c, result.ServerErrorStatus)

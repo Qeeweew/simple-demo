@@ -7,12 +7,13 @@ import (
 )
 
 type App struct {
-	Host      string
-	Port      string
-	JwtSecret string
-	Release   string
-	RunMode   string
-	VideoPath string
+	Host       string
+	Port       string
+	JwtSecret  string
+	Release    string
+	RunMode    string
+	VideoPath  string
+	FFmpegPath string
 }
 
 type Mysql struct {

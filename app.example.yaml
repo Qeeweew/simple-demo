@@ -10,7 +10,8 @@ app:
   jwtSecret: 114514
   release: false
   runMode: debug  # gin 启动模式
-  videoPath: ./public/videos #用户上传视频保存位置
+  videoPath: ./public/videos # 用户上传
+  ffmpegPath: ./public/ffmpeg-6.0-amd64-static/ffmpeg # ffmpeg 可执行文件路径（静态exe即可）
 
 db:
   mysql:
