@@ -45,7 +45,7 @@ func Publish(c *gin.Context) {
 		AuthorId: userId,
 		Title:    title,
 		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
-		CoverUrl: "https://img.zcool.cn/community/0144255afb8e64a801207ab475a594.jpg@1280w_1l_2o_100sh.jpg",
+		// TODO: 生成视频封面
 	}
 	if err := service.NewVideo().Publish(&video); err != nil {
 		result.Error(c, result.ServerErrorStatus)

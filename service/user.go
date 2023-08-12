@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"simple-demo/common/log"
 	"simple-demo/common/model"
 	"simple-demo/repository"
@@ -63,6 +64,8 @@ func (u *userService) Register(user *model.User) error {
 
 		// 用户未注册过
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 随机头像
+			user.Avatar = fmt.Sprintf("https://api.multiavatar.com/%s.png", user.Name)
 			return u.User(txctx).Save(user)
 		}
 
