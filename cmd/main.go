@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"simple-demo/common/config"
 	"simple-demo/common/log"
+	"simple-demo/common/oss"
 	"simple-demo/repository/dbcore"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,7 @@ func init() {
 	config.Init()
 	log.Init()
 	dbcore.Init()
+	oss.Init()
 }
 
 func main() {

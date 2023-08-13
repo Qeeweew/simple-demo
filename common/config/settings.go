@@ -7,13 +7,11 @@ import (
 )
 
 type App struct {
-	Host       string
-	Port       string
-	JwtSecret  string
-	Release    string
-	RunMode    string
-	VideoPath  string
-	FFmpegPath string
+	Host      string
+	Port      string
+	JwtSecret string
+	Release   string
+	RunMode   string
 }
 
 type Mysql struct {
@@ -40,11 +38,19 @@ type Log struct {
 	TimeFormat  string
 }
 
+type Aliyun struct {
+	Endpoint        string
+	AccessKeyID     string
+	AccessKeySecret string
+	BucketName      string
+}
+
 var (
-	AppCfg   App
-	MysqlCfg Mysql
-	RedisCfg Redis
-	LogCfg   Log
+	AppCfg    App
+	MysqlCfg  Mysql
+	RedisCfg  Redis
+	LogCfg    Log
+	AliyunCfg Aliyun
 )
 
 func Init() {
@@ -63,6 +69,10 @@ func Init() {
 	}
 
 	if err = conf.UnmarshalKey("log", &LogCfg); err != nil {
+		logrus.Panicf("parse config err, log: %v", err)
+	}
+
+	if err = conf.UnmarshalKey("aliyun", &AliyunCfg); err != nil {
 		logrus.Panicf("parse config err, log: %v", err)
 	}
 	logrus.Debug("parse config success")

@@ -1,19 +1,19 @@
 package controller
 
 import (
-	"fmt"
+	"bytes"
+	"github.com/gin-gonic/gin"
+	"github.com/h2non/filetype"
+	"go.uber.org/zap"
+	"io"
+	"mime/multipart"
 	"net/http"
-	"os/exec"
-	"path/filepath"
 	"simple-demo/common/config"
 	"simple-demo/common/log"
 	"simple-demo/common/model"
+	"simple-demo/common/oss"
 	"simple-demo/common/result"
 	"simple-demo/service"
-	"sync/atomic"
-
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type VideoListResponse struct {
@@ -21,10 +21,7 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list"`
 }
 
-// TODO: 不要用下面的变量，将上传文件保存到tmp文件夹中，得到video_id后再重命名
-var videoSeqNum int32 = 1
-
-// Publish save upload file to public directory
+// Publish save upload file to Aliyun oss
 func Publish(c *gin.Context) {
 	userId := c.Keys["auth_id"].(uint)
 	title := c.PostForm("title")
@@ -36,32 +33,83 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
-	atomic.AddInt32(&videoSeqNum, 1)
-	filename := filepath.Base(data.Filename)
-	finalName := fmt.Sprintf("%d-%s", videoSeqNum, filename)
-	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
-	// 暂时放这里了
-	if err := c.SaveUploadedFile(data, saveFile); err != nil {
-		result.Error(c, result.ServerErrorStatus)
-		log.Logger.Error("Saving video failed", zap.String("err", err.Error()))
-		return
-	}
-	log.Logger.Info("Saving video Succeed", zap.String("File", finalName))
 
-	coverName := fmt.Sprint("cover_", videoSeqNum, ".jpg")
-	coverPath := filepath.Join(config.AppCfg.VideoPath, coverName)
-	cmd := exec.Command(config.AppCfg.FFmpegPath, "-i", saveFile, "-vframes:v", "1", coverPath)
-	if err := cmd.Run(); err != nil {
-		log.Logger.Sugar().Info(cmd.Args)
-		log.Logger.Error("Generating cover failed", zap.String("err", err.Error()))
-		exec.Command("rm", saveFile).Run()
+	// 获取文件
+	file, err := data.Open()
+	if err != nil {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
 		return
 	}
+	defer func(file multipart.File) {
+		err := file.Close()
+		if err != nil {
+		}
+	}(file)
+
+	// 判断是否为视频
+	checkFile, err := data.Open()
+	if err != nil {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, checkFile); err != nil {
+		log.Logger.Error("copy file error")
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	if filetype.IsVideo(buf.Bytes()) == false {
+		log.Logger.Error("file is not video")
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	checkFile.Close()
+
+	// 存储到oss
+	log.Logger.Info("start to upload video to oss, file type: ")
+	ok, err := oss.UploadVideoToOss(config.AliyunCfg.BucketName, data.Filename, file)
+	if err != nil {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+	if !ok {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+
+	// 获取url 存储到数据库
+	videoUrl, imgUrl, err := oss.GetOssVideoUrlAndImgUrl(config.AliyunCfg.BucketName, data.Filename)
+	if err != nil {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
+
 	var video = model.Video{
 		AuthorId: userId,
 		Title:    title,
-		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
-		CoverUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, coverName),
+		PlayUrl:  videoUrl,
+		CoverUrl: imgUrl,
 	}
 	if err := service.NewVideo().Publish(&video); err != nil {
 		result.Error(c, result.ServerErrorStatus)
@@ -70,7 +118,7 @@ func Publish(c *gin.Context) {
 	log.Logger.Info("Publish Succeed", zap.String("url", video.PlayUrl))
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
-		StatusMsg:  finalName + " uploaded successfully",
+		StatusMsg:  videoUrl + " uploaded successfully",
 	})
 }
 

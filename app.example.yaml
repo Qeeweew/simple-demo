@@ -10,8 +10,6 @@ app:
   jwtSecret: 114514
   release: false
   runMode: debug  # gin 启动模式
-  videoPath: ./public/videos # 用户上传
-  ffmpegPath: ./public/ffmpeg-6.0-amd64-static/ffmpeg # ffmpeg 可执行文件路径（静态exe即可）
 
 db:
   mysql:
@@ -33,3 +31,9 @@ log:
   logSavePath: logs
   logFileExt: log
   timeFormat: 2006-01-02 - 15:04:05.000
+
+aliyun:
+  endpoint:
+  accessKeyID:
+  accessKeySecret:
+  bucketName:

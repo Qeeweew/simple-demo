@@ -1,7 +1,6 @@
 package main
 
 import (
-	"simple-demo/common/config"
 	"simple-demo/controller"
 	"simple-demo/middleware"
 
@@ -9,8 +8,6 @@ import (
 )
 
 func initRouter(r *gin.Engine) {
-	// 用于存放视频
-	r.Static("/videos", config.AppCfg.VideoPath)
 
 	apiRouter := r.Group("/douyin")
 
