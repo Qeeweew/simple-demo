@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"simple-demo/common/config"
@@ -10,7 +11,7 @@ import (
 	"simple-demo/common/model"
 	"simple-demo/common/result"
 	"simple-demo/service"
-	"sync/atomic"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -20,9 +21,6 @@ type VideoListResponse struct {
 	Response
 	VideoList []Video `json:"video_list"`
 }
-
-// TODO: 不要用下面的变量，将上传文件保存到tmp文件夹中，得到video_id后再重命名
-var videoSeqNum int32 = 1
 
 // Publish save upload file to public directory
 func Publish(c *gin.Context) {
@@ -36,32 +34,34 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
-	atomic.AddInt32(&videoSeqNum, 1)
+
 	filename := filepath.Base(data.Filename)
-	finalName := fmt.Sprintf("%d-%s", videoSeqNum, filename)
-	saveFile := filepath.Join(config.AppCfg.VideoPath, finalName)
-	// 暂时放这里了
-	if err := c.SaveUploadedFile(data, saveFile); err != nil {
+	relativePath := filepath.Join(fmt.Sprint(userId), fmt.Sprint(time.Now().Unix()))
+	prefix := filepath.Join(config.AppCfg.VideoPath, relativePath)
+	videoPath := prefix + filename
+	coverPath := prefix + "cover.jpg"
+	relativrVideoPath := relativePath + filename
+	relativeCoverPath := relativePath + "cover.jpg"
+
+	if err := c.SaveUploadedFile(data, videoPath); err != nil {
 		result.Error(c, result.ServerErrorStatus)
 		log.Logger.Error("Saving video failed", zap.String("err", err.Error()))
 		return
 	}
-	log.Logger.Info("Saving video Succeed", zap.String("File", finalName))
+	log.Logger.Info("Saving video Succeed", zap.String("File", videoPath))
 
-	coverName := fmt.Sprint("cover_", videoSeqNum, ".jpg")
-	coverPath := filepath.Join(config.AppCfg.VideoPath, coverName)
-	cmd := exec.Command(config.AppCfg.FFmpegPath, "-i", saveFile, "-vframes:v", "1", coverPath)
+	cmd := exec.Command(config.AppCfg.FFmpegPath, "-i", videoPath, "-vframes:v", "1", coverPath)
 	if err := cmd.Run(); err != nil {
-		log.Logger.Sugar().Info(cmd.Args)
+		result.Error(c, result.ServerErrorStatus)
 		log.Logger.Error("Generating cover failed", zap.String("err", err.Error()))
-		exec.Command("rm", saveFile).Run()
+		os.Remove(videoPath)
 		return
 	}
 	var video = model.Video{
 		AuthorId: userId,
 		Title:    title,
-		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, finalName),
-		CoverUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, coverName),
+		PlayUrl:  fmt.Sprintf("http://%s/videos/%s", c.Request.Host, relativrVideoPath),
+		CoverUrl: fmt.Sprintf("http://%s/videos/%s", c.Request.Host, relativeCoverPath),
 	}
 	if err := service.NewVideo().Publish(&video); err != nil {
 		result.Error(c, result.ServerErrorStatus)
@@ -70,7 +70,7 @@ func Publish(c *gin.Context) {
 	log.Logger.Info("Publish Succeed", zap.String("url", video.PlayUrl))
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
-		StatusMsg:  finalName + " uploaded successfully",
+		StatusMsg:  relativrVideoPath + " uploaded successfully",
 	})
 }
 
