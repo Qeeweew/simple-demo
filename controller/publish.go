@@ -21,6 +21,7 @@ type VideoListResponse struct {
 	VideoList []Video `json:"video_list"`
 }
 
+// TODO: 不要用下面的变量，将上传文件保存到tmp文件夹中，得到video_id后再重命名
 var videoSeqNum int32 = 1
 
 // Publish save upload file to public directory
