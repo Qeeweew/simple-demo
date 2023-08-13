@@ -67,7 +67,7 @@ type Comment struct {
 	VideoId    uint      `gorm:"not null;index" json:"-"`
 	CreatedAt  time.Time `gorm:"not null" json:"-"`
 	CreateDate string    `gorm:"-:all" json:"create_date"`
-	User       User      `gorm:"foreignKey:UserId"`
+	User       User      `gorm:"foreignKey:UserId" json:"user"`
 }
 
 // Favorite 点赞表

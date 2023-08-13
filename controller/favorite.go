@@ -50,6 +50,7 @@ func FavoriteList(c *gin.Context) {
 	videos, err := service.NewFavorite().FavoriteList(UserId, req.UserId)
 	if err != nil {
 		result.Error(c, result.FavoriteErrorStatus)
+		return
 	}
 	result.Success(c, result.R{
 		"video_list": videos,

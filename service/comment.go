@@ -6,6 +6,7 @@ import (
 	"simple-demo/repository"
 	"simple-demo/repository/dbcore"
 	"sync"
+	"time"
 )
 
 type commentService struct {
@@ -46,7 +47,8 @@ func (c *commentService) CommentList(userId uint, videoId uint) (comments []mode
 				return
 			}
 			for i := range comments {
-				c.User(txctx).FillExtraData(userId, &comments[i].User, false)
+				comments[i].CreateDate = comments[i].CreatedAt.Format(time.Kitchen)
+				// c.User(txctx).FillExtraData(userId, &comments[i].User, false)
 			}
 			return nil
 		})
