@@ -22,7 +22,7 @@ func (v *videoRepository) Save(video *model.Video) error {
 
 func (v *videoRepository) FindListByUserId(userId uint, videos *[]model.Video) error {
 	return v.Transaction(func(tx *gorm.DB) (err error) {
-		err = v.Preload("Author").Where(model.Video{AuthorId: userId}).Find(videos).Error
+		err = v.Preload("Author").Where(model.Video{AuthorId: userId}).Order("created_at DESC").Find(videos).Error
 		return
 	})
 }
