@@ -72,9 +72,10 @@ type Comment struct {
 
 // Favorite 点赞表
 type Favorite struct {
-	UserId  uint  `gorm:"primaryKey;autoIncrement:false"`
-	VideoId uint  `gorm:"primaryKey;autoIncrement:false"`
-	Video   Video `gorm:"foreignKey:VideoId"`
+	UserId    uint      `gorm:"primaryKey;autoIncrement:false"`
+	VideoId   uint      `gorm:"primaryKey;autoIncrement:false"`
+	Video     Video     `gorm:"foreignKey:VideoId"`
+	CreatedAt time.Time `gorm:"not null" json:"-"`
 }
 
 // Message 聊天消息表
