@@ -49,14 +49,14 @@ func (v *videoService) GetPublishList(userId uint, targetId uint) (videos []mode
 	return
 }
 
-func (v *videoService) GetFeedList(limit uint) (videos []model.Video, err error) {
+func (v *videoService) GetFeedList(userId uint, limit uint) (videos []model.Video, err error) {
 	err = v.tximpl.Transaction(context.Background(), func(txctx context.Context) (err error) {
 		err = v.Video(txctx).FeedList(limit, &videos)
 		if err != nil {
 			return
 		}
 		for i := range videos {
-			err = v.Video(txctx).FillExtraData(0, &videos[i])
+			err = v.Video(txctx).FillExtraData(userId, &videos[i])
 			if err != nil {
 				return
 			}

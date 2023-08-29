@@ -123,7 +123,7 @@ type VideoService interface {
 	ServiceBase
 	Publish(video *Video) error
 	GetPublishList(userId uint, targetId uint) ([]Video, error)
-	GetFeedList(userId uint) ([]Video, error)
+	GetFeedList(userId uint, limit uint) ([]Video, error)
 }
 
 type VideoRepository interface {
